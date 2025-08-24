@@ -1,8 +1,8 @@
 package co.com.powerup.ags.authentication.usecase.user;
 
-import co.com.powerup.autenticacion.usecase.user.dto.CreateUserCommand;
-import co.com.powerup.autenticacion.usecase.user.dto.UpdateUserCommand;
-import co.com.powerup.autenticacion.usecase.user.dto.UserResponse;
+import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
+import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
+import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

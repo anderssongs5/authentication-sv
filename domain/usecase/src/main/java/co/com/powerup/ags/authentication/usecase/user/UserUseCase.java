@@ -1,13 +1,13 @@
 package co.com.powerup.ags.authentication.usecase.user;
 
-import co.com.powerup.autenticacion.model.common.exception.DataAlreadyExistsException;
-import co.com.powerup.autenticacion.model.common.exception.EntityNotFoundException;
-import co.com.powerup.autenticacion.model.user.User;
-import co.com.powerup.autenticacion.model.user.gateways.UserRepository;
-import co.com.powerup.autenticacion.usecase.user.dto.CreateUserCommand;
-import co.com.powerup.autenticacion.usecase.user.dto.UpdateUserCommand;
-import co.com.powerup.autenticacion.usecase.user.dto.UserResponse;
-import co.com.powerup.autenticacion.usecase.user.mapper.UserMapper;
+import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.EntityNotFoundException;
+import co.com.powerup.ags.authentication.model.user.User;
+import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
+import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
+import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
+import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
+import co.com.powerup.ags.authentication.usecase.user.mapper.UserMapper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
