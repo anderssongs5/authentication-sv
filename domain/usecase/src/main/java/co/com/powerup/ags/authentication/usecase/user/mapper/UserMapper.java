@@ -1,24 +1,21 @@
 package co.com.powerup.ags.authentication.usecase.user.mapper;
 
-import co.com.powerup.autenticacion.model.user.User;
-import co.com.powerup.autenticacion.model.user.valueobjects.Email;
-import co.com.powerup.autenticacion.model.user.valueobjects.PhoneNumber;
-import co.com.powerup.autenticacion.usecase.user.dto.CreateUserCommand;
-import co.com.powerup.autenticacion.usecase.user.dto.UpdateUserCommand;
-import co.com.powerup.autenticacion.usecase.user.dto.UserResponse;
-
-import java.util.UUID;
+import co.com.powerup.ags.authentication.model.user.User;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
+import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
+import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
+import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 
 public class UserMapper {
     
     private UserMapper() {
-        // Private constructor to prevent instantiation
         super();
     }
     
     public static User commandToUser(CreateUserCommand command) {
         return new User(
-                UUID.randomUUID().toString(), // App generates UUID for new users
+                null,
                 command.name(),
                 command.lastName(),
                 command.address(),
@@ -31,7 +28,7 @@ public class UserMapper {
     
     public static User commandToUser(UpdateUserCommand command) {
         return new User(
-                command.id().toString(),
+                command.id(),
                 command.name(),
                 command.lastName(),
                 command.address(),

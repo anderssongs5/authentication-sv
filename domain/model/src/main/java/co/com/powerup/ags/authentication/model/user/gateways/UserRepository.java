@@ -1,6 +1,6 @@
 package co.com.powerup.ags.authentication.model.user.gateways;
 
-import co.com.powerup.autenticacion.model.user.User;
+import co.com.powerup.ags.authentication.model.user.User;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

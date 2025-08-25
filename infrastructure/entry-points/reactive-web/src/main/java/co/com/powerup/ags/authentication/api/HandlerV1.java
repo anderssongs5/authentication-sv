@@ -64,6 +64,7 @@ public class HandlerV1 {
         
         log.info("Retrieving all users from database");
         return userHelper.getAllUsers()
+                .map(requestMapper::toResponse)
                 .collectList()
                 .doOnNext(users -> log.info("Retrieved {} users successfully", users.size()))
                 .flatMap(users -> ServerResponse.ok().bodyValue(
@@ -79,6 +80,7 @@ public class HandlerV1 {
         String id = serverRequest.pathVariable("id");
         log.info("Retrieving user with ID: {}", id);
         return userHelper.getUserById(id)
+                .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User retrieved successfully: {}", user.id()))
                 .flatMap(user -> ServerResponse.ok().bodyValue(
                         ApiResponse.success(HandlerMessages.USER_RETRIEVED_SUCCESS, user)))
@@ -100,6 +102,7 @@ public class HandlerV1 {
                 .map(requestMapper::toCommand)
                 .doOnNext(command -> log.info("Creating new user with email: {}", command.email()))
                 .flatMap(userHelper::createUser)
+                .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User created successfully with ID: {}", user.id()))
                 .flatMap(user -> ServerResponse.ok().bodyValue(
                         ApiResponse.success(HandlerMessages.USER_CREATED_SUCCESS, user)))
@@ -120,6 +123,7 @@ public class HandlerV1 {
         return serverRequest.bodyToMono(UpdateUserRequest.class)
                 .map(request -> requestMapper.toCommand(request, id))
                 .flatMap(userHelper::updateUser)
+                .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User updated successfully with ID: {}", user.id()))
                 .flatMap(user -> ServerResponse.ok().bodyValue(
                         ApiResponse.success(HandlerMessages.USER_UPDATED_SUCCESS, user)))
@@ -165,6 +169,7 @@ public class HandlerV1 {
         
         log.info("Searching user by email: {}", email);
         return userHelper.getUserByEmail(email)
+                .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User retrieved successfully by email: {}", user.id()))
                 .flatMap(user -> ServerResponse.ok().bodyValue(
                         ApiResponse.success(HandlerMessages.USER_RETRIEVED_SUCCESS, user)))

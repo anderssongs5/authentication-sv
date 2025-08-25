@@ -5,7 +5,7 @@ import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,14 +13,16 @@ import reactor.core.publisher.Mono;
 public class UserHelper {
     
     private final IUserService userService;
+    private final TransactionalOperator transactionalOperator;
     
-    public UserHelper(IUserService userService) {
+    public UserHelper(IUserService userService, TransactionalOperator transactionalOperator) {
         this.userService = userService;
+        this.transactionalOperator = transactionalOperator;
     }
     
-    @Transactional
     public Mono<UserResponse> createUser(CreateUserCommand command) {
-        return userService.createUser(command);
+        return userService.createUser(command)
+                .as(transactionalOperator::transactional);
     }
     
     public Flux<UserResponse> getAllUsers() {
@@ -32,11 +34,13 @@ public class UserHelper {
     }
     
     public Mono<UserResponse> updateUser(UpdateUserCommand command) {
-        return userService.updateUser(command);
+        return userService.updateUser(command)
+                .as(transactionalOperator::transactional);
     }
     
     public Mono<Void> deleteUser(String id) {
-        return userService.deleteUser(id);
+        return userService.deleteUser(id)
+                .as(transactionalOperator::transactional);
     }
     
     public Mono<UserResponse> getUserByEmail(String email) {

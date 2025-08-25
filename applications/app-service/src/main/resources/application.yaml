@@ -22,3 +22,12 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+adapters:
+  r2dbc:
+    host: "localhost"
+    port: 3306
+    database: "authenticacion_db"
+    schema: "public"
+    username: "authuser"
+    password: "authpassword"

@@ -1,7 +1,7 @@
 package co.com.powerup.ags.authentication.model.user;
 
-import co.com.powerup.autenticacion.model.user.valueobjects.Email;
-import co.com.powerup.autenticacion.model.user.valueobjects.PhoneNumber;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

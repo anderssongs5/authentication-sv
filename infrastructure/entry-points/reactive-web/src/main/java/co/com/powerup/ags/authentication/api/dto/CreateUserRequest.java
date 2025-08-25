@@ -1,16 +1,31 @@
 package co.com.powerup.ags.authentication.api.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Schema(description = "Request model for creating a new user")
 public class CreateUserRequest {
     
+    @Schema(description = "User's first name", example = "John", required = true)
     private String name;
+    
+    @Schema(description = "User's last name", example = "Doe", required = true)
     private String lastName;
+    
+    @Schema(description = "User's address", example = "123 Main St, City, Country", required = true)
     private String address;
+    
+    @Schema(description = "User's phone number", example = "+1234567890", required = true)
     private String phoneNumber;
+    
+    @Schema(description = "User's birth date", example = "1990-01-15", required = true)
     private LocalDate birthDate;
+    
+    @Schema(description = "User's email address", example = "john.doe@example.com", required = true)
     private String email;
+    
+    @Schema(description = "User's base salary", example = "50000.00", required = true)
     private BigDecimal baseSalary;
     
     public CreateUserRequest() {

@@ -11,6 +11,8 @@ import co.com.powerup.ags.authentication.usecase.user.mapper.UserMapper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 public class UserUseCase implements IUserService {
     
     private final UserRepository userRepository;
@@ -30,7 +32,7 @@ public class UserUseCase implements IUserService {
                     }
                     User user = UserMapper.commandToUser(command);
                     User userWithId = new User(
-                            null,
+                            UUID.randomUUID().toString(),
                             user.name(),
                             user.lastName(),
                             user.address(),

@@ -1,11 +1,18 @@
 package co.com.powerup.ags.authentication.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "Standard API response wrapper")
 public record ApiResponse<T>(
+        @Schema(description = "Response message", example = "Operation completed successfully")
         String message,
+        
+        @Schema(description = "Response data payload")
         T data,
+        
+        @Schema(description = "Response status", example = "success", allowableValues = {"success", "error", "conflict"})
         String status
 ) {
     
