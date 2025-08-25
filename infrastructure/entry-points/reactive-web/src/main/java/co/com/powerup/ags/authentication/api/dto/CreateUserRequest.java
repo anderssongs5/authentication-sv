@@ -1,31 +1,48 @@
 package co.com.powerup.ags.authentication.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Setter
+@Getter
 @Schema(description = "Request model for creating a new user")
 public class CreateUserRequest {
     
-    @Schema(description = "User's first name", example = "John", required = true)
+    @Schema(description = "User's first name", example = "Steven", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "Name is required and cannot be empty")
     private String name;
     
-    @Schema(description = "User's last name", example = "Doe", required = true)
+    @Schema(description = "User's last name", example = "Martinez", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "Last name is required and cannot be empty")
     private String lastName;
     
-    @Schema(description = "User's address", example = "123 Main St, City, Country", required = true)
+    @Schema(description = "User's address", example = "123 Main St, City, Country", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "Address is required and cannot be empty")
     private String address;
     
-    @Schema(description = "User's phone number", example = "+1234567890", required = true)
+    @Schema(description = "User's phone number", example = "1234567890", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "Phone number is required and cannot be empty")
+    @Pattern(regexp = "^\\d{1,15}$", message = "Phone number must contain only numbers")
     private String phoneNumber;
     
-    @Schema(description = "User's birth date", example = "1990-01-15", required = true)
+    @Schema(description = "User's birth date", example = "1990-01-15", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "Birth date is required")
+    @Past(message = "Birth date must be in the past")
     private LocalDate birthDate;
     
-    @Schema(description = "User's email address", example = "john.doe@example.com", required = true)
+    @Schema(description = "User's email address", example = "steven.martinez@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "Email is required and cannot be empty")
+    @Email(message = "Email must have a valid format")
     private String email;
     
-    @Schema(description = "User's base salary", example = "50000.00", required = true)
+    @Schema(description = "User's base salary", example = "50000.00", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "Base salary is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Base salary must be greater than 0")
     private BigDecimal baseSalary;
     
     public CreateUserRequest() {
@@ -42,59 +59,4 @@ public class CreateUserRequest {
         this.baseSalary = baseSalary;
     }
     
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public String getLastName() {
-        return lastName;
-    }
-    
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-    
-    public String getAddress() {
-        return address;
-    }
-    
-    public void setAddress(String address) {
-        this.address = address;
-    }
-    
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-    
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-    
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-    
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    public BigDecimal getBaseSalary() {
-        return baseSalary;
-    }
-    
-    public void setBaseSalary(BigDecimal baseSalary) {
-        this.baseSalary = baseSalary;
-    }
 }

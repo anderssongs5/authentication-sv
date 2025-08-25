@@ -5,7 +5,7 @@ CREATE DATABASE IF NOT EXISTS authenticacion_db;
 USE authenticacion_db;
 
 CREATE TABLE users (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     address TEXT,

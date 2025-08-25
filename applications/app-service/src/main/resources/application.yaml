@@ -23,6 +23,12 @@ management:
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
 
+logging:
+  level:
+    co.com.powerup.ags.authentication: DEBUG
+    org.springframework.web: DEBUG
+    reactor.netty: INFO
+
 adapters:
   r2dbc:
     host: "localhost"

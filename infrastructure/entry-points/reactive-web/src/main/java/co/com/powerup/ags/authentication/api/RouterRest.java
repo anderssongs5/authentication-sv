@@ -53,7 +53,7 @@ public class RouterRest {
                 ),
                 responses = {
                     @ApiResponse(
-                        responseCode = "200", 
+                        responseCode = "201",
                         description = "User created successfully",
                         content = @Content(schema = @Schema(implementation = co.com.powerup.ags.authentication.api.dto.ApiResponse.class))
                     ),

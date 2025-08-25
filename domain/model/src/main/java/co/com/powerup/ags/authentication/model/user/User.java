@@ -16,9 +16,9 @@ public record User(String id, String name, String lastName, String address, Phon
         this.name = validateName(name);
         this.lastName = validateLastName(lastName);
         this.address = address;
-        this.phoneNumber = Objects.requireNonNull(phoneNumber, "El número de teléfono no puede ser nulo");
+        this.phoneNumber = Objects.requireNonNull(phoneNumber, "Phone number cannot be null");
         this.birthDate = validateBirthDate(birthDate);
-        this.email = Objects.requireNonNull(email, "El correo electrónico no puede ser nulo");
+        this.email = Objects.requireNonNull(email, "Email cannot be null");
         this.baseSalary = validateBaseSalary(baseSalary);
     }
     
@@ -29,37 +29,37 @@ public record User(String id, String name, String lastName, String address, Phon
     
     private String validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre no puede ser nulo o vacío");
+            throw new IllegalArgumentException("Name cannot be null or empty");
         }
         return name;
     }
     
     private String validateLastName(String lastName) {
         if (lastName == null || lastName.trim().isEmpty()) {
-            throw new IllegalArgumentException("El apellido no puede ser nulo o vacío");
+            throw new IllegalArgumentException("Last name cannot be null or empty");
         }
         return lastName;
     }
     
     private LocalDate validateBirthDate(LocalDate birthDate) {
         if (birthDate == null) {
-            throw new IllegalArgumentException("La fecha de nacimiento no puede ser nula");
+            throw new IllegalArgumentException("Birth date cannot be null");
         }
         if (birthDate.isAfter(LocalDate.now().minusYears(18))) {
-            throw new IllegalArgumentException("El usuario debe tener al menos 18 años");
+            throw new IllegalArgumentException("User must be at least 18 years old");
         }
         return birthDate;
     }
     
     private BigDecimal validateBaseSalary(BigDecimal baseSalary) {
         if (baseSalary == null) {
-            throw new IllegalArgumentException("El salario base no puede ser nulo");
+            throw new IllegalArgumentException("Base salary cannot be null");
         }
         if (baseSalary.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("El salario base no puede ser negativo");
+            throw new IllegalArgumentException("Base salary cannot be negative");
         }
         if (baseSalary.compareTo(new BigDecimal("15000000")) > 0) {
-            throw new IllegalArgumentException("El salario base no puede ser mayor a 15,000,000");
+            throw new IllegalArgumentException("Base salary cannot be greater than 15,000,000");
         }
         return baseSalary;
     }

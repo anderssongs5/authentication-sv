@@ -13,13 +13,13 @@ public record PhoneNumber(String value) {
     
     private String validate(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("El número de teléfono debe tener un valor");
+            throw new IllegalArgumentException("Phone number must have a value");
         }
         
         String trimmedNumber = phoneNumber.trim();
         
         if (!PHONE_PATTERN.matcher(trimmedNumber).matches()) {
-            throw new IllegalArgumentException("El número de teléfono debe contener solo números: " + phoneNumber);
+            throw new IllegalArgumentException("Phone number must contain only numbers: " + phoneNumber);
         }
         
         return trimmedNumber;

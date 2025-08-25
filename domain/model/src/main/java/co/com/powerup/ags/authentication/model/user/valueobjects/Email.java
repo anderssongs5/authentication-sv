@@ -15,13 +15,13 @@ public record Email(String value) {
     
     private String validate(String email) {
         if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("El correo debe tener un valor");
+            throw new IllegalArgumentException("Email must have a value");
         }
         
         String trimmedEmail = email.trim().toLowerCase();
         
         if (!EMAIL_PATTERN.matcher(trimmedEmail).matches()) {
-            throw new IllegalArgumentException("El correo no tiene un formato válido: " + email);
+            throw new IllegalArgumentException("Email does not have a valid format: " + email);
         }
         
         return trimmedEmail;
