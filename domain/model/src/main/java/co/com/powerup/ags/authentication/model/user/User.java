@@ -22,11 +22,6 @@ public record User(String id, String name, String lastName, String address, Phon
         this.baseSalary = validateBaseSalary(baseSalary);
     }
     
-    /*public static User create(String name, String lastName, String address,
-                             PhoneNumber phoneNumber, LocalDate birthDate, Email email, BigDecimal baseSalary) {
-        return new User(null, name, lastName, address, phoneNumber, birthDate, email, baseSalary);
-    }*/
-    
     private String validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be null or empty");

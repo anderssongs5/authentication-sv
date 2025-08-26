@@ -27,7 +27,7 @@ public class UserUseCase implements IUserService {
                 .flatMap(exists -> {
                     if (exists) {
                         return Mono.error(
-                                new DataAlreadyExistsException("Ya existe un usuario con el correo: " + command.email())
+                                new DataAlreadyExistsException("User already exists with email: " + command.email())
                         );
                     }
                     User user = UserMapper.commandToUser(command);
@@ -49,7 +49,7 @@ public class UserUseCase implements IUserService {
     @Override
     public Mono<UserResponse> updateUser(UpdateUserCommand command) {
         return userRepository.findById(command.id())
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Usuario no encontrado con ID: " + command.id())))
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("User not found with ID: " + command.id())))
                 .flatMap(existingUser -> {
                     User updatedUser = UserMapper.commandToUser(command);
                     return userRepository.save(updatedUser);
@@ -66,29 +66,29 @@ public class UserUseCase implements IUserService {
     @Override
     public Mono<UserResponse> getUserById(String id) {
         if (id == null) {
-            return Mono.error(new IllegalArgumentException("El ID del usuario no puede ser nulo"));
+            return Mono.error(new IllegalArgumentException("User ID cannot be null"));
         }
         
         return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Usuario no encontrado con ID: " + id)))
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("User not found with ID: " + id)))
                 .map(UserMapper::userToResponse);
     }
     
     @Override
     public Mono<Void> deleteUser(String id) {
         return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Usuario no encontrado con ID: " + id)))
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("User not found with ID: " + id)))
                 .flatMap(user -> userRepository.deleteById(id));
     }
     
     @Override
     public Mono<UserResponse> getUserByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("El correo electrónico no puede ser nulo o vacío"));
+            return Mono.error(new IllegalArgumentException("Email cannot be null or empty"));
         }
         
         return userRepository.findByEmail(email)
-                .switchIfEmpty(Mono.error(new EntityNotFoundException("Usuario no encontrado con correo: " + email)))
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("User not found with email: " + email)))
                 .map(UserMapper::userToResponse);
     }
 }

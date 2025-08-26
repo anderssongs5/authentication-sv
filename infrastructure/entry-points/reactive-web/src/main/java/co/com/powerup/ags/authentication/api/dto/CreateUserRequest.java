@@ -43,6 +43,7 @@ public class CreateUserRequest {
     @Schema(description = "User's base salary", example = "50000.00", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Base salary is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Base salary must be greater than 0")
+    @DecimalMax(value = "15000000.00", message = "Base salary cannot exceed 15,000,000")
     private BigDecimal baseSalary;
     
     public CreateUserRequest() {

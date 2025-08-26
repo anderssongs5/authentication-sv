@@ -8,6 +8,8 @@ import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper
 public interface UserRequestMapper {
     
@@ -18,4 +20,6 @@ public interface UserRequestMapper {
     UpdateUserCommand toCommand(UpdateUserRequest request, String id);
     
     UserResponse toResponse(co.com.powerup.ags.authentication.usecase.user.dto.UserResponse domainResponse);
+    
+    List<UserResponse> toListResponse(List<co.com.powerup.ags.authentication.usecase.user.dto.UserResponse> domainResponse);
 }

@@ -39,6 +39,7 @@ public class UpdateUserRequest {
     
     @Schema(description = "User's base salary", example = "50000.00")
     @DecimalMin(value = "0.0", inclusive = false, message = "Base salary must be greater than 0 when provided")
+    @DecimalMax(value = "15000000.00", message = "Base salary cannot exceed 15,000,000 when provided")
     private BigDecimal baseSalary;
     
     public UpdateUserRequest() {
