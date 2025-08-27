@@ -1,26 +1,40 @@
 package co.com.powerup.ags.authentication.api.config;
 
-import co.com.powerup.ags.authentication.api.Handler;
+import co.com.powerup.ags.authentication.api.HandlerV1;
 import co.com.powerup.ags.authentication.api.RouterRest;
+import co.com.powerup.ags.authentication.usecase.user.IUserService;
+import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 
-@ContextConfiguration(classes = {RouterRest.class, Handler.class})
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@ContextConfiguration(classes = {RouterRest.class, HandlerV1.class})
 @WebFluxTest
 @Import({CorsConfig.class, SecurityHeadersConfig.class})
 class ConfigTest {
 
     @Autowired
     private WebTestClient webTestClient;
+    
+    @MockitoBean
+    private IUserService userService;
 
     @Test
     void corsConfigurationShouldAllowOrigins() {
+        Mockito.when(userService.getAllUsers()).thenReturn(Flux.just(new UserResponse("", "",
+                "", "", "", LocalDate.now(), "", BigDecimal.ONE)));
+        
         webTestClient.get()
-                .uri("/api/usecase/path")
+                .uri("/api/v1/users")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-Security-Policy",

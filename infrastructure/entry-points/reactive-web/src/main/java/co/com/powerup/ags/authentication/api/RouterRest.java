@@ -504,6 +504,44 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/users/search",
+                    method = RequestMethod.GET,
+                    beanClass = HandlerV1.class,
+                    beanMethod = "getUserByEmail",
+                    operation = @Operation(
+                            operationId = "getUserByEmail",
+                            summary = "Search user by email",
+                            description = "Retrieves a user by their email address",
+                            parameters = {
+                                    @Parameter(
+                                            name = "email",
+                                            description = "User email address",
+                                            required = true,
+                                            in = ParameterIn.QUERY,
+                                            schema = @Schema(type = "string", example = "steven.garcia@test.com")
+                                    )
+                            },
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "User found successfully",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = SuccessResponse.class)
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "User not found",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class)
+                                            )
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(HandlerV1 handlerV1) {
@@ -513,10 +551,10 @@ public class RouterRest {
                         builder -> builder
                                 .GET("", handlerV1::getAllUsers)
                                 .POST("", handlerV1::createUser)
+                                .GET("/search", handlerV1::getUserByEmail)
                                 .GET(ID_PATH_PARAM, handlerV1::getUserById)
                                 .PUT(ID_PATH_PARAM, handlerV1::updateUser)
-                                .DELETE(ID_PATH_PARAM, handlerV1::deleteUser)
-                                .GET("/search", handlerV1::getUserByEmail))
+                                .DELETE(ID_PATH_PARAM, handlerV1::deleteUser))
                 .build();
     }
 }

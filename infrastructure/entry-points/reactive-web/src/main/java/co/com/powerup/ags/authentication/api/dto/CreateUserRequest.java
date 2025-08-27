@@ -2,14 +2,16 @@ package co.com.powerup.ags.authentication.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Setter
-@Getter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "Request model for creating a new user")
 public class CreateUserRequest {
     
@@ -45,19 +47,5 @@ public class CreateUserRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "Base salary must be greater than 0")
     @DecimalMax(value = "15000000.00", message = "Base salary cannot exceed 15,000,000")
     private BigDecimal baseSalary;
-    
-    public CreateUserRequest() {
-    }
-    
-    public CreateUserRequest(String name, String lastName, String address, 
-                           String phoneNumber, LocalDate birthDate, String email, BigDecimal baseSalary) {
-        this.name = name;
-        this.lastName = lastName;
-        this.address = address;
-        this.phoneNumber = phoneNumber;
-        this.birthDate = birthDate;
-        this.email = email;
-        this.baseSalary = baseSalary;
-    }
     
 }

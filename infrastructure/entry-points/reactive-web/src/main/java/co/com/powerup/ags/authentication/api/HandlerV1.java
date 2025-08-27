@@ -164,7 +164,7 @@ public class HandlerV1 {
                 .flatMap(userResponse -> {
                     SuccessResponse<UserResponse> successResponse = SuccessResponse.<UserResponse>builder()
                             .timestamp(LocalDateTime.now())
-                            .path(serverRequest.path())
+                            .path(serverRequest.path() + (serverRequest.uri().getQuery() != null ? "?" + serverRequest.uri().getQuery() : ""))
                             .data(userResponse)
                             .message(HandlerMessages.USER_RETRIEVED_SUCCESS)
                             .build();
