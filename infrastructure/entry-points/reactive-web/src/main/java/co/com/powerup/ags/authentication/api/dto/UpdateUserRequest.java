@@ -42,11 +42,15 @@ public class UpdateUserRequest {
     @DecimalMax(value = "15000000.00", message = "Base salary cannot exceed 15,000,000 when provided")
     private BigDecimal baseSalary;
     
+    @Schema(description = "User's id number", example = "12345679", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "ID number is required and cannot be empty")
+    private String idNumber;
+    
     public UpdateUserRequest() {
     }
     
-    public UpdateUserRequest(String name, String lastName, String address, 
-                           String phoneNumber, LocalDate birthDate, String email, BigDecimal baseSalary) {
+    public UpdateUserRequest(String name, String lastName, String address, String phoneNumber, LocalDate birthDate,
+                             String email, BigDecimal baseSalary, String idNumber) {
         this.name = name;
         this.lastName = lastName;
         this.address = address;
@@ -54,6 +58,7 @@ public class UpdateUserRequest {
         this.birthDate = birthDate;
         this.email = email;
         this.baseSalary = baseSalary;
+        this.idNumber = idNumber;
     }
     
 }

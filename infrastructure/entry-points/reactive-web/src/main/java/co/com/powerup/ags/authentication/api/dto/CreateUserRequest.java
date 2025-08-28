@@ -48,4 +48,8 @@ public class CreateUserRequest {
     @DecimalMax(value = "15000000.00", message = "Base salary cannot exceed 15,000,000")
     private BigDecimal baseSalary;
     
+    @Schema(description = "User's id number", example = "12345679", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "ID number is required and cannot be empty")
+    private String idNumber;
+    
 }

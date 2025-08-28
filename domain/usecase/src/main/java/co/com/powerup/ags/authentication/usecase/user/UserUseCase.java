@@ -23,11 +23,13 @@ public class UserUseCase {
     }
 
     public Mono<UserResponse> createUser(CreateUserCommand command) {
-        return userRepository.existsByEmail(command.email())
+        return userRepository.existsByEmailOrIdNumber(command.email(), command.idNumber())
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
                         return Mono.error(
-                                new DataAlreadyExistsException("User already exists with email: " + command.email())
+                                new DataAlreadyExistsException(
+                                        String.format("A user already exists with the provided email %s or id number: %s",
+                                                command.email(), command.idNumber()))
                         );
                     }
                     return UserMapper.commandToUser(command)
@@ -39,7 +41,8 @@ public class UserUseCase {
                                     user.phoneNumber(),
                                     user.birthDate(),
                                     user.email(),
-                                    user.baseSalary()
+                                    user.baseSalary(),
+                                    command.idNumber()
                             ));
                 })
                 .flatMap(userRepository::save)
@@ -83,6 +86,15 @@ public class UserUseCase {
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
                 .flatMap(userRepository::findByEmail)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with email: " + email)))
+                .map(UserMapper::userToResponse);
+    }
+    
+    public Mono<UserResponse> getUserByIdNumber(String idNumber) {
+        return Mono.justOrEmpty(idNumber)
+                .filter(idn -> idn != null && !idn.trim().isEmpty())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("ID number cannot be null or empty")))
+                .flatMap(userRepository::findByIdNumber)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id number: " + idNumber)))
                 .map(UserMapper::userToResponse);
     }
 }

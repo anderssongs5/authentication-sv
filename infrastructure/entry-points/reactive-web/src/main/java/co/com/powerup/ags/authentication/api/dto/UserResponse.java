@@ -28,7 +28,10 @@ public record UserResponse(
         String email,
         
         @Schema(description = "User's base salary", example = "50000.00")
-        BigDecimal baseSalary
+        BigDecimal baseSalary,
+        
+        @Schema(description = "User's id number", example = "12345615")
+        String idNumber
 ) {
     
 }

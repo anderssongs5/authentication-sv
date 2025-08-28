@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record CreateUserCommand(String name, String lastName, String address, String phoneNumber, LocalDate birthDate,
-                                String email, BigDecimal baseSalary) {
+                                String email, BigDecimal baseSalary, String idNumber) {
     
 }

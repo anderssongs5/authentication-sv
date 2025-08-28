@@ -22,6 +22,7 @@ class UserEntityMapperTest {
     private static final LocalDate USER_BIRTH_DATE = LocalDate.of(1990, 10, 1);
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
+    private static final String USER_ID_NUMBER = "12345679";
 
     private final UserEntityMapper mapper = UserEntityMapper.INSTANCE;
     
@@ -38,7 +39,8 @@ class UserEntityMapperTest {
                 new PhoneNumber(USER_PHONE_NUMBER),
                 USER_BIRTH_DATE,
                 new Email(USER_EMAIL),
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         validUserEntity = UserEntity.builder()
@@ -50,6 +52,7 @@ class UserEntityMapperTest {
                 .birthDate(USER_BIRTH_DATE)
                 .email(USER_EMAIL)
                 .baseSalary(USER_BASE_SALARY)
+                .idNumber(USER_ID_NUMBER)
                 .isNew(true)
                 .build();
     }
@@ -147,6 +150,7 @@ class UserEntityMapperTest {
                 .birthDate(USER_BIRTH_DATE)
                 .email(USER_EMAIL)
                 .baseSalary(USER_BASE_SALARY)
+                .idNumber(USER_ID_NUMBER)
                 .build();
 
         User result = mapper.toDomain(entityWithNulls);

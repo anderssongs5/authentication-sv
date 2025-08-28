@@ -25,6 +25,7 @@ class UserRequestMapperTest {
     private static final LocalDate USER_BIRTH_DATE = LocalDate.of(1990, 10, 1);
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
+    private static final String USER_ID_NUMBER = "561615616";
 
     private final UserRequestMapper mapper = UserRequestMapper.INSTANCE;
     
@@ -41,7 +42,8 @@ class UserRequestMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         updateUserRequest = new UpdateUserRequest(
@@ -51,7 +53,8 @@ class UserRequestMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         domainUserResponse = new co.com.powerup.ags.authentication.usecase.user.dto.UserResponse(
@@ -62,7 +65,8 @@ class UserRequestMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
     }
 
@@ -115,13 +119,14 @@ class UserRequestMapperTest {
         co.com.powerup.ags.authentication.usecase.user.dto.UserResponse domainResponse2 = 
                 new co.com.powerup.ags.authentication.usecase.user.dto.UserResponse(
                         "123e4567-e89b-12d3-a456-426614174001",
-                        "Jane",
-                        "Smith",
-                        "456 Oak Ave",
+                        "Andersson",
+                        "Garcia",
+                        "Av 30 # 53-14",
                         "0987654321",
                         LocalDate.of(1985, 5, 20),
-                        "jane.smith@test.com",
-                        new BigDecimal("60000.00")
+                        "andersson.garcia@example.com",
+                        new BigDecimal("60000.00"),
+                        "1245679"
                 );
 
         List<co.com.powerup.ags.authentication.usecase.user.dto.UserResponse> domainList = 
@@ -220,7 +225,8 @@ class UserRequestMapperTest {
                         command.phoneNumber(),
                         command.birthDate(),
                         command.email(),
-                        command.baseSalary()
+                        command.baseSalary(),
+                        command.idNumber()
                 );
         
         UserResponse finalResponse = mapper.toResponse(simulatedDomainResponse);

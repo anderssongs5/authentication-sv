@@ -48,6 +48,9 @@ public class UserEntity implements Persistable<String> {
     @Column("base_salary")
     private BigDecimal baseSalary;
     
+    @Column("identity_number")
+    private String idNumber;
+    
     @Transient
     private boolean isNew = true;
 

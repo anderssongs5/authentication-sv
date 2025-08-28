@@ -104,4 +104,35 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<Use
                 .onErrorMap(DataAccessException.class,
                     ex -> new RuntimeException("Failed to check user existence by email: " + ex.getMessage(), ex));
     }
+    
+    @Override
+    public Mono<User> findByIdNumber(String idNumber) {
+        return Mono.justOrEmpty(idNumber)
+                .filter(userNId -> !userNId.trim().isEmpty())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("User Id Number cannot be null or empty")))
+                .doOnNext(userId -> log.debug("Finding user by Id Number: {}", userId))
+                .flatMap(super.repository::findByIdNumber)
+                .map(UserEntityMapper.INSTANCE::toDomain)
+                .doOnNext(user -> log.debug("Found user by id number: {}", user.id()))
+                .onErrorMap(DataAccessException.class,
+                        ex -> new RuntimeException("Failed to find user by Id Number: " + ex.getMessage(), ex));
+    }
+    
+    @Override
+    public Mono<Boolean> existsByEmailOrIdNumber(String email, String idNumber) {
+        return Mono.defer(() -> {
+            boolean isEmailValid = email != null && !email.trim().isEmpty();
+            boolean isIdValid = idNumber != null && !idNumber.trim().isEmpty();
+            
+            if (!isEmailValid && !isIdValid) {
+                return Mono.error(new IllegalArgumentException("Either email or ID number must be provided"));
+            }
+            
+            log.debug("Checking if user exists by email: {} or ID number: {}", email, idNumber);
+            return repository.existsByEmailOrIdNumber(email, idNumber)
+                    .doOnNext(exists -> log.debug("User exists by email {} or ID number {}: {}", email, idNumber, exists))
+                    .onErrorMap(DataAccessException.class,
+                            ex -> new RuntimeException("Failed to check user existence: " + ex.getMessage(), ex));
+        });
+    }
 }

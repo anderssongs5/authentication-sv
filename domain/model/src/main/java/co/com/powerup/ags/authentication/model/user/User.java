@@ -8,10 +8,10 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public record User(String id, String name, String lastName, String address, PhoneNumber phoneNumber,
-                   LocalDate birthDate, Email email, BigDecimal baseSalary) {
+                   LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber) {
     
     public User(String id, String name, String lastName, String address,
-                PhoneNumber phoneNumber, LocalDate birthDate, Email email, BigDecimal baseSalary) {
+                PhoneNumber phoneNumber, LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber) {
         this.id = id;
         this.name = validateName(name);
         this.lastName = validateLastName(lastName);
@@ -20,20 +20,21 @@ public record User(String id, String name, String lastName, String address, Phon
         this.birthDate = validateBirthDate(birthDate);
         this.email = Objects.requireNonNull(email, "Email cannot be null");
         this.baseSalary = validateBaseSalary(baseSalary);
+        this.idNumber = validateIdNumber(idNumber);
     }
     
     private String validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
-        return name;
+        return name.trim();
     }
     
     private String validateLastName(String lastName) {
         if (lastName == null || lastName.trim().isEmpty()) {
             throw new IllegalArgumentException("Last name cannot be null or empty");
         }
-        return lastName;
+        return lastName.trim();
     }
     
     private LocalDate validateBirthDate(LocalDate birthDate) {
@@ -59,6 +60,13 @@ public record User(String id, String name, String lastName, String address, Phon
         return baseSalary;
     }
     
+    private String validateIdNumber(String idNumber) {
+        if (idNumber == null || idNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID number cannot be null or empty");
+        }
+        return idNumber.trim();
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -79,7 +87,8 @@ public record User(String id, String name, String lastName, String address, Phon
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", email=" + email +
+                ", email=" + email + '\'' +
+                ", identityNumber=" + idNumber +
                 '}';
     }
 }

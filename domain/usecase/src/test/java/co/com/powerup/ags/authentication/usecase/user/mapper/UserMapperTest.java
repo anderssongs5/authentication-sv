@@ -26,6 +26,7 @@ class UserMapperTest {
     private static final LocalDate USER_BIRTH_DATE = LocalDate.of(1990, 10, 1);
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
+    private static final String USER_ID_NUMBER = "123456789";
 
     private CreateUserCommand createUserCommand;
     private UpdateUserCommand updateUserCommand;
@@ -40,7 +41,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         updateUserCommand = new UpdateUserCommand(
@@ -51,7 +53,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         user = new User(
@@ -62,7 +65,8 @@ class UserMapperTest {
                 new PhoneNumber(USER_PHONE_NUMBER),
                 USER_BIRTH_DATE,
                 new Email(USER_EMAIL),
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
     }
 
@@ -83,6 +87,7 @@ class UserMapperTest {
                     assertThat(user.email()).isNotNull();
                     assertThat(user.email().value()).isEqualTo(createUserCommand.email());
                     assertThat(user.baseSalary()).isEqualTo(createUserCommand.baseSalary());
+                    assertThat(user.idNumber()).isEqualTo(createUserCommand.idNumber());
                 })
                 .verifyComplete();
     }
@@ -104,6 +109,7 @@ class UserMapperTest {
                     assertThat(user.email()).isNotNull();
                     assertThat(user.email().value()).isEqualTo(updateUserCommand.email());
                     assertThat(user.baseSalary()).isEqualTo(updateUserCommand.baseSalary());
+                    assertThat(user.idNumber()).isEqualTo(updateUserCommand.idNumber());
                 })
                 .verifyComplete();
     }
@@ -121,6 +127,7 @@ class UserMapperTest {
         assertThat(result.birthDate()).isEqualTo(user.birthDate());
         assertThat(result.email()).isEqualTo(user.email().value());
         assertThat(result.baseSalary()).isEqualTo(user.baseSalary());
+        assertThat(result.idNumber()).isEqualTo(user.idNumber());
     }
 
     @Test
@@ -243,6 +250,7 @@ class UserMapperTest {
                     assertThat(response.birthDate()).isEqualTo(createUserCommand.birthDate());
                     assertThat(response.email()).isEqualTo(createUserCommand.email());
                     assertThat(response.baseSalary()).isEqualTo(createUserCommand.baseSalary());
+                    assertThat(response.idNumber()).isEqualTo(createUserCommand.idNumber());
                 })
                 .verifyComplete();
     }
@@ -262,6 +270,7 @@ class UserMapperTest {
                     assertThat(response.birthDate()).isEqualTo(updateUserCommand.birthDate());
                     assertThat(response.email()).isEqualTo(updateUserCommand.email());
                     assertThat(response.baseSalary()).isEqualTo(updateUserCommand.baseSalary());
+                    assertThat(response.idNumber()).isEqualTo(updateUserCommand.idNumber());
                 })
                 .verifyComplete();
     }
@@ -302,7 +311,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 "invalid-email",
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidEmailCommand);
@@ -325,7 +335,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 "invalid-email",
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidEmailCommand);
@@ -347,7 +358,8 @@ class UserMapperTest {
                 "123abc456",
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidPhoneCommand);
@@ -370,7 +382,8 @@ class UserMapperTest {
                 "123abc456",
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidPhoneCommand);
@@ -392,7 +405,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(nullNameCommand);
@@ -415,7 +429,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(nullNameCommand);
@@ -437,7 +452,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 LocalDate.now().minusYears(17),
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(underAgeCommand);
@@ -460,7 +476,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 LocalDate.now().minusYears(17),
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(underAgeCommand);
@@ -482,7 +499,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                new BigDecimal("-1000.00")
+                new BigDecimal("-1000.00"),
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(negativeSalaryCommand);
@@ -505,7 +523,8 @@ class UserMapperTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                new BigDecimal("-1000.00")
+                new BigDecimal("-1000.00"),
+                USER_ID_NUMBER
         );
 
         Mono<User> result = UserMapper.commandToUser(negativeSalaryCommand);
@@ -515,6 +534,147 @@ class UserMapperTest {
                         throwable instanceof IllegalArgumentException &&
                         throwable.getMessage().contains("User validation failed") &&
                         throwable.getMessage().contains("Base salary cannot be negative"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasNullIdNumber() {
+        CreateUserCommand nullIdNumberCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                null
+        );
+
+        Mono<User> result = UserMapper.commandToUser(nullIdNumberCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("ID number cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasNullIdNumber() {
+        UpdateUserCommand nullIdNumberCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                null
+        );
+
+        Mono<User> result = UserMapper.commandToUser(nullIdNumberCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("ID number cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasEmptyIdNumber() {
+        CreateUserCommand emptyIdNumberCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                ""
+        );
+
+        Mono<User> result = UserMapper.commandToUser(emptyIdNumberCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("ID number cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasEmptyIdNumber() {
+        UpdateUserCommand emptyIdNumberCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                ""
+        );
+
+        Mono<User> result = UserMapper.commandToUser(emptyIdNumberCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("ID number cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasBlankIdNumber() {
+        CreateUserCommand blankIdNumberCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                "   "
+        );
+
+        Mono<User> result = UserMapper.commandToUser(blankIdNumberCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("ID number cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasBlankIdNumber() {
+        UpdateUserCommand blankIdNumberCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                "   "
+        );
+
+        Mono<User> result = UserMapper.commandToUser(blankIdNumberCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("ID number cannot be null or empty"))
                 .verify();
     }
 }

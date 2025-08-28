@@ -34,6 +34,7 @@ class UserReactiveRepositoryAdapterTest {
     private static final LocalDate USER_BIRTH_DATE = LocalDate.of(1990, 10, 1);
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
+    private static final String USER_ID_NUMBER = "123456789";
 
     @InjectMocks
     UserReactiveRepositoryAdapter repositoryAdapter;
@@ -60,7 +61,8 @@ class UserReactiveRepositoryAdapterTest {
                 new PhoneNumber(USER_PHONE_NUMBER),
                 USER_BIRTH_DATE,
                 new Email(USER_EMAIL),
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
         
         validUserEntity = UserEntity.builder()
@@ -72,6 +74,7 @@ class UserReactiveRepositoryAdapterTest {
                 .birthDate(USER_BIRTH_DATE)
                 .email(USER_EMAIL)
                 .baseSalary(USER_BASE_SALARY)
+                .idNumber(USER_ID_NUMBER)
                 .build();
     }
 
@@ -411,5 +414,154 @@ class UserReactiveRepositoryAdapterTest {
                 .verify();
 
         verify(repository, never()).existsByEmail(any());
+    }
+
+    @Test
+    void mustFindByIdNumber() {
+        when(repository.findByIdNumber(USER_ID_NUMBER)).thenReturn(Mono.just(validUserEntity));
+
+        Mono<User> result = repositoryAdapter.findByIdNumber(USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectNextMatches(user -> user.idNumber().equals(USER_ID_NUMBER))
+                .verifyComplete();
+
+        verify(repository).findByIdNumber(USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdNumberNotFound() {
+        when(repository.findByIdNumber(USER_ID_NUMBER)).thenReturn(Mono.empty());
+
+        Mono<User> result = repositoryAdapter.findByIdNumber(USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectComplete()
+                .verify();
+
+        verify(repository).findByIdNumber(USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustThrowErrorWhenFindingByNullIdNumber() {
+        Mono<User> result = repositoryAdapter.findByIdNumber(null);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(repository, never()).findByIdNumber(any());
+    }
+
+    @Test
+    void mustThrowErrorWhenFindingByEmptyIdNumber() {
+        Mono<User> result = repositoryAdapter.findByIdNumber("");
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(repository, never()).findByIdNumber(any());
+    }
+
+    @Test
+    void mustHandleDataAccessExceptionOnFindByIdNumber() {
+        when(repository.findByIdNumber(USER_ID_NUMBER)).thenReturn(Mono.error(new DataAccessResourceFailureException("Database connection failed")));
+
+        Mono<User> result = repositoryAdapter.findByIdNumber(USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(repository).findByIdNumber(USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustCheckExistsByEmailOrIdNumber() {
+        when(repository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER)).thenReturn(Mono.just(true));
+
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectNextMatches(exists -> exists)
+                .verifyComplete();
+
+        verify(repository).existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustReturnFalseWhenNeitherEmailNorIdNumberExists() {
+        when(repository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER)).thenReturn(Mono.just(false));
+
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectNextMatches(exists -> !exists)
+                .verifyComplete();
+
+        verify(repository).existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustCheckExistsByEmailOnly() {
+        when(repository.existsByEmailOrIdNumber(USER_EMAIL, null)).thenReturn(Mono.just(true));
+
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber(USER_EMAIL, null);
+
+        StepVerifier.create(result)
+                .expectNextMatches(exists -> exists)
+                .verifyComplete();
+
+        verify(repository).existsByEmailOrIdNumber(USER_EMAIL, null);
+    }
+
+    @Test
+    void mustCheckExistsByIdNumberOnly() {
+        when(repository.existsByEmailOrIdNumber(null, USER_ID_NUMBER)).thenReturn(Mono.just(true));
+
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber(null, USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectNextMatches(exists -> exists)
+                .verifyComplete();
+
+        verify(repository).existsByEmailOrIdNumber(null, USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustThrowErrorWhenBothEmailAndIdNumberAreNull() {
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber(null, null);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(repository, never()).existsByEmailOrIdNumber(any(), any());
+    }
+
+    @Test
+    void mustThrowErrorWhenBothEmailAndIdNumberAreEmpty() {
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber("", "");
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(repository, never()).existsByEmailOrIdNumber(any(), any());
+    }
+
+    @Test
+    void mustHandleDataAccessExceptionOnExistsByEmailOrIdNumber() {
+        when(repository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER))
+                .thenReturn(Mono.error(new DataAccessResourceFailureException("Database connection failed")));
+
+        Mono<Boolean> result = repositoryAdapter.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(repository).existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
     }
 }

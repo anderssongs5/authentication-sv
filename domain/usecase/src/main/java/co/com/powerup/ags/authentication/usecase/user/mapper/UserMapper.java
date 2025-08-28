@@ -24,7 +24,8 @@ public class UserMapper {
                 new PhoneNumber(command.phoneNumber()),
                 command.birthDate(),
                 new Email(command.email()),
-                command.baseSalary()
+                command.baseSalary(),
+                command.idNumber()
         ))
         .onErrorMap(IllegalArgumentException.class, 
             ex -> new IllegalArgumentException("User validation failed: " + ex.getMessage()));
@@ -39,7 +40,8 @@ public class UserMapper {
                 new PhoneNumber(command.phoneNumber()),
                 command.birthDate(),
                 new Email(command.email()),
-                command.baseSalary()
+                command.baseSalary(),
+                command.idNumber()
         ))
         .onErrorMap(IllegalArgumentException.class,
             ex -> new IllegalArgumentException("User validation failed: " + ex.getMessage()));
@@ -54,7 +56,8 @@ public class UserMapper {
                 user.phoneNumber().value(),
                 user.birthDate(),
                 user.email().value(),
-                user.baseSalary()
+                user.baseSalary(),
+                user.idNumber()
         );
     }
 }

@@ -42,6 +42,7 @@ class UserUseCaseTest {
     private static final LocalDate USER_BIRTH_DATE = LocalDate.of(1990, 10, 1);
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
+    private static final String USER_ID_NUMBER = "123456";
 
     private CreateUserCommand validCreateUserCommand;
     private UpdateUserCommand validUpdateUserCommand;
@@ -58,7 +59,8 @@ class UserUseCaseTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         validUpdateUserCommand = new UpdateUserCommand(
@@ -69,7 +71,8 @@ class UserUseCaseTest {
                 USER_PHONE_NUMBER,
                 USER_BIRTH_DATE,
                 USER_EMAIL,
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
 
         validUser = new User(
@@ -80,13 +83,14 @@ class UserUseCaseTest {
                 new PhoneNumber(USER_PHONE_NUMBER),
                 USER_BIRTH_DATE,
                 new Email(USER_EMAIL),
-                USER_BASE_SALARY
+                USER_BASE_SALARY,
+                USER_ID_NUMBER
         );
     }
 
     @Test
     void shouldCreateUserSuccessfullyWhenEmailDoesNotExist() {
-        when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(false));
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER)).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(validUser));
 
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
@@ -105,29 +109,30 @@ class UserUseCaseTest {
                 })
                 .verifyComplete();
 
-        verify(userRepository).existsByEmail(USER_EMAIL);
+        verify(userRepository).existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     void shouldThrowDataAlreadyExistsExceptionWhenEmailAlreadyExists() {
-        when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(true));
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER)).thenReturn(Mono.just(true));
 
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
 
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof DataAlreadyExistsException &&
-                        throwable.getMessage().equals("User already exists with email: " + USER_EMAIL))
+                        throwable.getMessage().equals(String.format("A user already exists with the provided email %s" +
+                                " or id number: %s", USER_EMAIL, USER_ID_NUMBER)))
                 .verify();
 
-        verify(userRepository).existsByEmail(USER_EMAIL);
+        verify(userRepository).existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void shouldGenerateUuidForNewUser() {
-        when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(false));
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER)).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
             assertThat(savedUser.id()).isNotNull();
@@ -147,7 +152,7 @@ class UserUseCaseTest {
 
     @Test
     void shouldHandleRepositoryErrorDuringExistenceCheck() {
-        when(userRepository.existsByEmail(USER_EMAIL))
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER))
                 .thenReturn(Mono.error(new RuntimeException("Unexpected database error")));
 
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
@@ -161,7 +166,7 @@ class UserUseCaseTest {
 
     @Test
     void shouldHandleRepositoryErrorDuringSave() {
-        when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(false));
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER)).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class)))
                 .thenReturn(Mono.error(new RuntimeException("Save failed")));
 
@@ -333,13 +338,14 @@ class UserUseCaseTest {
     void shouldReturnAllUsersSuccessfully() {
         User user2 = new User(
                 "different-id",
-                "Jane",
-                "Smith",
-                "456 Oak St",
+                "Carolina",
+                "Guerra",
+                "Calle 13 # 12-12",
                 new PhoneNumber("9876543210"),
                 LocalDate.of(1985, 5, 20),
-                new Email("jane.smith@example.com"),
-                new BigDecimal("75000.00")
+                new Email("carolina.guerra@example.com"),
+                new BigDecimal("75000.00"),
+                "123456489"
         );
 
         when(userRepository.findAll()).thenReturn(Flux.just(validUser, user2));
@@ -353,7 +359,7 @@ class UserUseCaseTest {
                 })
                 .assertNext(userResponse -> {
                     assertThat(userResponse.id()).isEqualTo("different-id");
-                    assertThat(userResponse.name()).isEqualTo("Jane");
+                    assertThat(userResponse.name()).isEqualTo("Carolina");
                 })
                 .verifyComplete();
 
@@ -468,6 +474,232 @@ class UserUseCaseTest {
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
                         throwable.getMessage().equals("Query failed"))
+                .verify();
+    }
+
+    @Test
+    void shouldReturnUserSuccessfullyWhenIdNumberExists() {
+        when(userRepository.findByIdNumber(USER_ID_NUMBER)).thenReturn(Mono.just(validUser));
+
+        Mono<UserResponse> result = userUseCase.getUserByIdNumber(USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .assertNext(userResponse -> {
+                    assertThat(userResponse).isNotNull();
+                    assertThat(userResponse.id()).isEqualTo(USER_ID);
+                    assertThat(userResponse.idNumber()).isEqualTo(USER_ID_NUMBER);
+                })
+                .verifyComplete();
+
+        verify(userRepository).findByIdNumber(USER_ID_NUMBER);
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundExceptionWhenIdNumberDoesNotExist() {
+        when(userRepository.findByIdNumber(USER_ID_NUMBER)).thenReturn(Mono.empty());
+
+        Mono<UserResponse> result = userUseCase.getUserByIdNumber(USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof UserNotFoundException &&
+                        throwable.getMessage().equals("User not found with id number: " + USER_ID_NUMBER))
+                .verify();
+
+        verify(userRepository).findByIdNumber(USER_ID_NUMBER);
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenIdNumberIsNull() {
+        Mono<UserResponse> result = userUseCase.getUserByIdNumber(null);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().equals("ID number cannot be null or empty"))
+                .verify();
+
+        verify(userRepository, never()).findByIdNumber(any());
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenIdNumberIsEmpty() {
+        Mono<UserResponse> result = userUseCase.getUserByIdNumber("");
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().equals("ID number cannot be null or empty"))
+                .verify();
+
+        verify(userRepository, never()).findByIdNumber(any());
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenIdNumberIsWhitespace() {
+        Mono<UserResponse> result = userUseCase.getUserByIdNumber("   ");
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().equals("ID number cannot be null or empty"))
+                .verify();
+
+        verify(userRepository, never()).findByIdNumber(any());
+    }
+
+    @Test
+    void shouldHandleRepositoryErrorDuringFindByIdNumber() {
+        when(userRepository.findByIdNumber(USER_ID_NUMBER))
+                .thenReturn(Mono.error(new RuntimeException("Query failed")));
+
+        Mono<UserResponse> result = userUseCase.getUserByIdNumber(USER_ID_NUMBER);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException &&
+                        throwable.getMessage().equals("Query failed"))
+                .verify();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingUserWithNullIdNumber() {
+        CreateUserCommand commandWithNullIdNumber = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                null
+        );
+
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, null)).thenReturn(Mono.just(false));
+
+        Mono<UserResponse> result = userUseCase.createUser(commandWithNullIdNumber);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(userRepository).existsByEmailOrIdNumber(USER_EMAIL, null);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingUserWithEmptyIdNumber() {
+        CreateUserCommand commandWithEmptyIdNumber = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                ""
+        );
+
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, "")).thenReturn(Mono.just(false));
+
+        Mono<UserResponse> result = userUseCase.createUser(commandWithEmptyIdNumber);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(userRepository).existsByEmailOrIdNumber(USER_EMAIL, "");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingUserWithBlankIdNumber() {
+        CreateUserCommand commandWithBlankIdNumber = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                "   "
+        );
+
+        when(userRepository.existsByEmailOrIdNumber(USER_EMAIL, "   ")).thenReturn(Mono.just(false));
+
+        Mono<UserResponse> result = userUseCase.createUser(commandWithBlankIdNumber);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(userRepository).existsByEmailOrIdNumber(USER_EMAIL, "   ");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingUserWithNullIdNumber() {
+        UpdateUserCommand commandWithNullIdNumber = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                null
+        );
+        
+        when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
+
+        Mono<UserResponse> result = userUseCase.updateUser(commandWithNullIdNumber);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingUserWithEmptyIdNumber() {
+        UpdateUserCommand commandWithEmptyIdNumber = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                ""
+        );
+        
+        when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
+
+        Mono<UserResponse> result = userUseCase.updateUser(commandWithEmptyIdNumber);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingUserWithBlankIdNumber() {
+        UpdateUserCommand commandWithBlankIdNumber = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY,
+                "   "
+        );
+        
+        when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
+
+        Mono<UserResponse> result = userUseCase.updateUser(commandWithBlankIdNumber);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
                 .verify();
     }
 }

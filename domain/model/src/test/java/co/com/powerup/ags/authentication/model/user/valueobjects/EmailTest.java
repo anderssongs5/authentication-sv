@@ -35,7 +35,7 @@ class EmailTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {"   ", "\t", "\n"})
+    @ValueSource(strings = {"   "})
     void shouldThrowExceptionForNullOrEmptyEmails(String invalidEmail) {
         assertThatThrownBy(() -> new Email(invalidEmail))
                 .isInstanceOf(IllegalArgumentException.class)

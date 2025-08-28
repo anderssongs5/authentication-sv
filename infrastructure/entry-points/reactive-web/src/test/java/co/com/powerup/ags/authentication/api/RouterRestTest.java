@@ -44,20 +44,22 @@ class TestConfig {
 @WebFluxTest
 class RouterRestTest {
     
-    public static final String USER_ID_1 = "123e4567-e89b-12d3-a456-426614174001";
-    public static final String USER_NAME_1 = "Raminder";
-    public static final String USER_LAST_NAME_1 = "Kalher";
-    public static final String USER_ADDRESS_1 = "Carrera 30 # 53-14";
-    public static final String USER_PHONE_NUMBER_1 = "1234567890";
-    public static final String USER_EMAIL_1 = "raminder.kalher@example.com";
-    public static final String USER_ID_2 = "123e4567-e89b-12d3-a456-426614174002";
-    public static final String USER_NAME_2 = "Monica";
-    public static final String USER_LAST_NAME_2 = "Gil";
-    public static final String USER_ADDRESS_2 = "Calle 60 # 71-12";
-    public static final String USER_PHONE_NUMBER_2 = "0987654321";
-    public static final String USER_EMAIL_2 = "monica.gil@gmail.com";
-    public static final String USERS_PATH = "/api/v1/users";
-    public static final String USER_BASE_SALARY_1 = "50000.00";
+    private static final String USER_ID_1 = "123e4567-e89b-12d3-a456-426614174001";
+    private static final String USER_NAME_1 = "Raminder";
+    private static final String USER_LAST_NAME_1 = "Kalher";
+    private static final String USER_ADDRESS_1 = "Carrera 30 # 53-14";
+    private static final String USER_PHONE_NUMBER_1 = "1234567890";
+    private static final String USER_EMAIL_1 = "raminder.kalher@example.com";
+    private static final String USER_ID_2 = "123e4567-e89b-12d3-a456-426614174002";
+    private static final String USER_NAME_2 = "Monica";
+    private static final String USER_LAST_NAME_2 = "Gil";
+    private static final String USER_ADDRESS_2 = "Calle 60 # 71-12";
+    private static final String USER_PHONE_NUMBER_2 = "0987654321";
+    private static final String USER_EMAIL_2 = "monica.gil@gmail.com";
+    private static final String USERS_PATH = "/api/v1/users";
+    private static final String USER_BASE_SALARY_1 = "50000.00";
+    private static final String USER_ID_NUMBER_1 = "4586311";
+    private static final String USER_ID_NUMBER_2 = "9852112144";
 
     @Autowired
     private WebTestClient webTestClient;
@@ -78,7 +80,8 @@ class RouterRestTest {
                 USER_PHONE_NUMBER_1,
                 LocalDate.of(1990, 1, 15),
                 USER_EMAIL_1,
-                new BigDecimal(USER_BASE_SALARY_1)
+                new BigDecimal(USER_BASE_SALARY_1),
+                 USER_ID_NUMBER_1
         );
         
         mockUser2 = new UserResponse(
@@ -89,7 +92,8 @@ class RouterRestTest {
                 USER_PHONE_NUMBER_2,
                 LocalDate.of(1985, 5, 20),
                 USER_EMAIL_2,
-                new BigDecimal("60000.00")
+                new BigDecimal("60000.00"),
+                USER_ID_NUMBER_2
         );
     }
 
@@ -139,7 +143,7 @@ class RouterRestTest {
     @Test
     void testPOSTCreateUser() {
         CreateUserCommand createUserRequest = new CreateUserCommand(USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
-                USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1));
+                USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1), USER_ID_NUMBER_1);
         
         when(userUseCase.createUser(createUserRequest)).thenReturn(Mono.just(mockUser1));
         
@@ -169,6 +173,7 @@ class RouterRestTest {
         createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         createUserRequest.setEmail(USER_EMAIL_1);
         createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
 
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAccessResourceFailureException("Unable to connect to database")));
@@ -196,6 +201,7 @@ class RouterRestTest {
         createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         createUserRequest.setEmail(USER_EMAIL_1);
         createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
 
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAlreadyExistsException("User with email " + USER_EMAIL_1 + " already exists")));
@@ -211,6 +217,74 @@ class RouterRestTest {
                 .jsonPath("$.timestamp").exists()
                 .jsonPath("$.path").isEqualTo(USERS_PATH)
                 .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTCreateUserWithExistingIdNumber() {
+        CreateUserRequest createUserRequest = new CreateUserRequest();
+        createUserRequest.setName(USER_NAME_1);
+        createUserRequest.setLastName(USER_LAST_NAME_1);
+        createUserRequest.setAddress(USER_ADDRESS_1);
+        createUserRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        createUserRequest.setEmail(USER_EMAIL_1);
+        createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
+
+        when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
+                .thenReturn(Mono.error(new DataAlreadyExistsException("User with ID number " + USER_ID_NUMBER_1 + " already exists")));
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(createUserRequest)
+                .exchange()
+                .expectStatus().isEqualTo(409)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo(USERS_PATH)
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTCreateUserWithBlankIdNumber() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber("");
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithNullIdNumber() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(null);
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     @Test
@@ -277,7 +351,7 @@ class RouterRestTest {
         UpdateUserRequest updateRequest = new UpdateUserRequest(
                 USER_NAME_2, USER_LAST_NAME_2, USER_ADDRESS_2, 
                 USER_PHONE_NUMBER_2, LocalDate.of(1985, 5, 20), 
-                USER_EMAIL_2, new BigDecimal("60000.00")
+                USER_EMAIL_2, new BigDecimal("60000.00"), USER_ID_NUMBER_2
         );
 
         when(userUseCase.updateUser(org.mockito.ArgumentMatchers.any(UpdateUserCommand.class)))
@@ -421,6 +495,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -664,13 +739,13 @@ class RouterRestTest {
         UpdateUserRequest updateRequest = new UpdateUserRequest(
                 USER_NAME_2, USER_LAST_NAME_2, USER_ADDRESS_2, 
                 USER_PHONE_NUMBER_2, LocalDate.of(1985, 5, 20), 
-                USER_EMAIL_2, new BigDecimal("60000.00")
+                USER_EMAIL_2, new BigDecimal("60000.00"), USER_ID_NUMBER_2
         );
 
         UserResponse updatedUser = new UserResponse(
                 USER_ID_1, USER_NAME_2, USER_LAST_NAME_2, USER_ADDRESS_2,
                 USER_PHONE_NUMBER_2, LocalDate.of(1985, 5, 20), 
-                USER_EMAIL_2, new BigDecimal("60000.00")
+                USER_EMAIL_2, new BigDecimal("60000.00"), USER_ID_NUMBER_2
         );
 
         when(userUseCase.updateUser(org.mockito.ArgumentMatchers.any(UpdateUserCommand.class)))
@@ -701,7 +776,7 @@ class RouterRestTest {
         UpdateUserRequest updateRequest = new UpdateUserRequest(
                 USER_NAME_2, USER_LAST_NAME_2, USER_ADDRESS_2, 
                 USER_PHONE_NUMBER_2, LocalDate.of(1985, 5, 20), 
-                USER_EMAIL_2, new BigDecimal("60000.00")
+                USER_EMAIL_2, new BigDecimal("60000.00"), USER_ID_NUMBER_2
         );
 
         when(userUseCase.updateUser(org.mockito.ArgumentMatchers.any(UpdateUserCommand.class)))
@@ -731,6 +806,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
 
         String uri = String.format("%s/%s", USERS_PATH, USER_ID_1);
         webTestClient.put()

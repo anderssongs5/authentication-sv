@@ -31,7 +31,7 @@ class ConfigTest {
     @Test
     void corsConfigurationShouldAllowOrigins() {
         Mockito.when(userUseCase.getAllUsers()).thenReturn(Flux.just(new UserResponse("", "",
-                "", "", "", LocalDate.now(), "", BigDecimal.ONE)));
+                "", "", "", LocalDate.now(), "", BigDecimal.ONE, "")));
         
         webTestClient.get()
                 .uri("/api/v1/users")

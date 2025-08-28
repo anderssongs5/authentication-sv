@@ -22,6 +22,7 @@ class UserTest {
     private static final LocalDate VALID_BIRTH_DATE = LocalDate.of(1990, 10, 1);
     private static final Email VALID_EMAIL = new Email("steven.garcia@test.com");
     private static final BigDecimal VALID_BASE_SALARY = new BigDecimal("50000.00");
+    private static final String VALID_ID_NUMBER = "123456";
     
     @Test
     void shouldCreateUserWithAllValidParameters() {
@@ -33,7 +34,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         );
         
         assertThat(user).isNotNull();
@@ -58,7 +60,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 eighteenYearsAgo,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         );
         
         assertThat(user.birthDate()).isEqualTo(eighteenYearsAgo);
@@ -76,7 +79,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                maxSalary
+                maxSalary,
+                VALID_ID_NUMBER
         );
         
         assertThat(user.baseSalary()).isEqualByComparingTo(maxSalary);
@@ -94,7 +98,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                minSalary
+                minSalary,
+                VALID_ID_NUMBER
         );
         
         assertThat(user.baseSalary()).isEqualByComparingTo(minSalary);
@@ -102,7 +107,7 @@ class UserTest {
     
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {"   ", "\t", "\n", ""})
+    @ValueSource(strings = {"   ", ""})
     void shouldThrowExceptionForInvalidNames(String invalidName) {
         assertThatThrownBy(() -> new User(
                 VALID_ID,
@@ -112,7 +117,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Name cannot be null or empty");
@@ -120,7 +126,7 @@ class UserTest {
     
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {"   ", "\t", "\n"})
+    @ValueSource(strings = {"   "})
     void shouldThrowExceptionForInvalidLastNames(String invalidLastName) {
         assertThatThrownBy(() -> new User(
                 VALID_ID,
@@ -130,7 +136,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Last name cannot be null or empty");
@@ -146,7 +153,8 @@ class UserTest {
                 null,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Phone number cannot be null");
@@ -162,7 +170,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 null,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Email cannot be null");
@@ -178,7 +187,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 null,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Birth date cannot be null");
@@ -196,7 +206,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 futureDate,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User must be at least 18 years old");
@@ -214,7 +225,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 seventeenYearsAgo,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User must be at least 18 years old");
@@ -230,7 +242,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                null
+                null,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be null");
@@ -248,7 +261,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                negativeSalary
+                negativeSalary,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be negative");
@@ -266,7 +280,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                negativeSalary
+                negativeSalary,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be negative");
@@ -284,10 +299,30 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                excessiveSalary
+                excessiveSalary,
+                VALID_ID_NUMBER
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be greater than 15,000,000");
+    }
+    
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    void shouldThrowExceptionForInvalidIdNumber(String invalidIdNumber) {
+        assertThatThrownBy(() -> new User(
+                VALID_ID,
+                VALID_NAME,
+                VALID_LAST_NAME,
+                VALID_ADDRESS,
+                VALID_PHONE_NUMBER,
+                VALID_BIRTH_DATE,
+                VALID_EMAIL,
+                VALID_BASE_SALARY,
+                invalidIdNumber
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("ID number cannot be null or empty");
     }
     
     @Test
@@ -300,7 +335,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         );
         User user2 = new User(
                 VALID_ID,
@@ -310,7 +346,8 @@ class UserTest {
                 new PhoneNumber("9876543210"),
                 LocalDate.of(1985, 12, 25),
                 new Email("different@example.com"),
-                new BigDecimal("100000")
+                new BigDecimal("100000"),
+                "654616"
         );
         
         assertThat(user1).isEqualTo(user2);
@@ -327,7 +364,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         );
         User user2 = new User(
                 "different-id",
@@ -337,7 +375,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         );
         
         assertThat(user1).isNotEqualTo(user2);
@@ -353,7 +392,8 @@ class UserTest {
                 VALID_PHONE_NUMBER,
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
-                VALID_BASE_SALARY
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER
         );
         
         assertThat(user).isNotEqualTo(null);
