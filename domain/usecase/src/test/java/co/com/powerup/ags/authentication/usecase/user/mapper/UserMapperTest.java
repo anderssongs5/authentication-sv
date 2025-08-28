@@ -292,4 +292,229 @@ class UserMapperTest {
                 })
                 .verifyComplete();
     }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasInvalidEmail() {
+        CreateUserCommand invalidEmailCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                "invalid-email",
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(invalidEmailCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Email does not have a valid format"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasInvalidEmail() {
+        UpdateUserCommand invalidEmailCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                "invalid-email",
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(invalidEmailCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Email does not have a valid format"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasInvalidPhoneNumber() {
+        CreateUserCommand invalidPhoneCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                "123abc456",
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(invalidPhoneCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Phone number must contain only numbers"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasInvalidPhoneNumber() {
+        UpdateUserCommand invalidPhoneCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                "123abc456",
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(invalidPhoneCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Phone number must contain only numbers"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasNullName() {
+        CreateUserCommand nullNameCommand = new CreateUserCommand(
+                null,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(nullNameCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Name cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasNullName() {
+        UpdateUserCommand nullNameCommand = new UpdateUserCommand(
+                USER_ID,
+                null,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(nullNameCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Name cannot be null or empty"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasInvalidAge() {
+        CreateUserCommand underAgeCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                LocalDate.now().minusYears(17),
+                USER_EMAIL,
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(underAgeCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("User must be at least 18 years old"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasInvalidAge() {
+        UpdateUserCommand underAgeCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                LocalDate.now().minusYears(17),
+                USER_EMAIL,
+                USER_BASE_SALARY
+        );
+
+        Mono<User> result = UserMapper.commandToUser(underAgeCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("User must be at least 18 years old"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenCreateUserCommandHasNegativeSalary() {
+        CreateUserCommand negativeSalaryCommand = new CreateUserCommand(
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                new BigDecimal("-1000.00")
+        );
+
+        Mono<User> result = UserMapper.commandToUser(negativeSalaryCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Base salary cannot be negative"))
+                .verify();
+    }
+
+    @Test
+    void shouldMapErrorWhenUpdateUserCommandHasNegativeSalary() {
+        UpdateUserCommand negativeSalaryCommand = new UpdateUserCommand(
+                USER_ID,
+                USER_NAME,
+                USER_LAST_NAME,
+                USER_ADDRESS,
+                USER_PHONE_NUMBER,
+                USER_BIRTH_DATE,
+                USER_EMAIL,
+                new BigDecimal("-1000.00")
+        );
+
+        Mono<User> result = UserMapper.commandToUser(negativeSalaryCommand);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("User validation failed") &&
+                        throwable.getMessage().contains("Base salary cannot be negative"))
+                .verify();
+    }
 }

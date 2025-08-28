@@ -60,8 +60,4 @@ public class UserEntity implements Persistable<String> {
     public boolean isNew() {
         return this.isNew;
     }
-    
-    public void markAsExisting() {
-        this.isNew = false;
-    }
 }

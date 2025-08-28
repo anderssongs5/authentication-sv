@@ -29,35 +29,34 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
         errorAttributes.remove("trace");
         errorAttributes.remove("exception");
         
+        String path = getPath(serverRequest);
+        
         switch (error) {
             case DataAlreadyExistsException dataAlreadyExistsException ->
                     setErrorAttributes(errorAttributes, HttpStatus.CONFLICT, "DATA_ALREADY_EXISTS",
-                            "Conflict", dataAlreadyExistsException.getMessage(), serverRequest.path());
+                            "Conflict", dataAlreadyExistsException.getMessage(), path);
             case UserNotFoundException userNotFoundException ->
                     setErrorAttributes(errorAttributes, HttpStatus.NOT_FOUND, "DATA_NOT_FOUND",
-                            "Not Found", userNotFoundException.getMessage(), serverRequest.path());
+                            "Not Found", userNotFoundException.getMessage(), path);
             case IllegalArgumentException illegalArgumentException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "INVALID_INPUT",
-                            "Bad Request", error.getMessage(), serverRequest.path());
-            case ResponseStatusException rse -> {
-                log.warn("Response status exception", error);
-                
-                setErrorAttributes(errorAttributes, Objects.requireNonNull(HttpStatus.resolve(rse.getStatusCode().value())),
-                        "RESPONSE_STATUS_ERROR", getReasonPhrase(rse.getStatusCode()), rse.getReason(),
-                        serverRequest.path());
-            }
+                            "Bad Request", error.getMessage(), path);
             case null, default -> {
                 log.error("Unexpected error", error);
                 
                 setErrorAttributes(errorAttributes, HttpStatus.INTERNAL_SERVER_ERROR, "UNEXPECTED_ERROR",
                         "Internal Server Error", "An unexpected error occurred, please contact administrators.",
-                        serverRequest.path());
+                        getPath(serverRequest));
             }
         }
         
         errorAttributes.put("timestamp", LocalDateTime.now());
         errorAttributes.put("requestId", serverRequest.exchange().getRequest().getId());
         return errorAttributes;
+    }
+    
+    private static String getPath(ServerRequest serverRequest) {
+        return serverRequest.path() + (serverRequest.uri().getQuery() != null ? "?" + serverRequest.uri().getQuery() : "");
     }
     
     private void setErrorAttributes(Map<String, Object> errorAttributes, HttpStatus status,
@@ -67,10 +66,5 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
         errorAttributes.put("error", error);
         errorAttributes.put("message", message);
         errorAttributes.put("path", path);
-    }
-    
-    private String getReasonPhrase(HttpStatusCode statusCode) {
-        HttpStatus httpStatus = HttpStatus.resolve(statusCode.value());
-        return httpStatus != null ? httpStatus.getReasonPhrase() : "Unknown Status";
     }
 }
