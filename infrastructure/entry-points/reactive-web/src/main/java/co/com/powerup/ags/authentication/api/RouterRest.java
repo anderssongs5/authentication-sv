@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,7 @@ public class RouterRest {
                             operationId = "createUser",
                             summary = "Create a new user",
                             description = "Creates a new user with the provided information",
+                            tags = {"Users"},
                             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                     description = "User creation data",
                                     required = true,
@@ -151,6 +153,7 @@ public class RouterRest {
                             operationId = "getUserById",
                             summary = "Get user by ID",
                             description = "Retrieves a user by their unique identifier",
+                            tags = {"Users"},
                             parameters = {
                                     @Parameter(
                                             name = "id",
@@ -245,6 +248,7 @@ public class RouterRest {
                             operationId = "updateUser",
                             summary = "Update user",
                             description = "Updates an existing user with the provided information",
+                            tags = {"Users"},
                             parameters = {
                                     @Parameter(
                                             name = "id",
@@ -369,6 +373,7 @@ public class RouterRest {
                             operationId = "deleteUser",
                             summary = "Delete user",
                             description = "Deletes an existing user by their unique identifier",
+                            tags = {"Users"},
                             parameters = {
                                     @Parameter(
                                             name = "id",
@@ -439,6 +444,7 @@ public class RouterRest {
                             operationId = "getAllUsers",
                             summary = "Get all users",
                             description = "Retrieves a list of all users",
+                            tags = {"Users"},
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
@@ -514,6 +520,7 @@ public class RouterRest {
                             operationId = "getUserByIdNumber",
                             summary = "Search user by ID number",
                             description = "Retrieves a user by their ID number",
+                            tags = {"Users"},
                             parameters = {
                                     @Parameter(
                                             name = "idNumber",
