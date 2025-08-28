@@ -8,6 +8,8 @@ import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -66,36 +68,44 @@ class UserMapperTest {
 
     @Test
     void shouldMapCreateUserCommandToUser() {
-        User result = UserMapper.commandToUser(createUserCommand);
+        Mono<User> result = UserMapper.commandToUser(createUserCommand);
 
-        assertThat(result).isNotNull();
-        assertThat(result.id()).isNull();
-        assertThat(result.name()).isEqualTo(createUserCommand.name());
-        assertThat(result.lastName()).isEqualTo(createUserCommand.lastName());
-        assertThat(result.address()).isEqualTo(createUserCommand.address());
-        assertThat(result.phoneNumber()).isNotNull();
-        assertThat(result.phoneNumber().value()).isEqualTo(createUserCommand.phoneNumber());
-        assertThat(result.birthDate()).isEqualTo(createUserCommand.birthDate());
-        assertThat(result.email()).isNotNull();
-        assertThat(result.email().value()).isEqualTo(createUserCommand.email());
-        assertThat(result.baseSalary()).isEqualTo(createUserCommand.baseSalary());
+        StepVerifier.create(result)
+                .assertNext(user -> {
+                    assertThat(user).isNotNull();
+                    assertThat(user.id()).isNull();
+                    assertThat(user.name()).isEqualTo(createUserCommand.name());
+                    assertThat(user.lastName()).isEqualTo(createUserCommand.lastName());
+                    assertThat(user.address()).isEqualTo(createUserCommand.address());
+                    assertThat(user.phoneNumber()).isNotNull();
+                    assertThat(user.phoneNumber().value()).isEqualTo(createUserCommand.phoneNumber());
+                    assertThat(user.birthDate()).isEqualTo(createUserCommand.birthDate());
+                    assertThat(user.email()).isNotNull();
+                    assertThat(user.email().value()).isEqualTo(createUserCommand.email());
+                    assertThat(user.baseSalary()).isEqualTo(createUserCommand.baseSalary());
+                })
+                .verifyComplete();
     }
 
     @Test
     void shouldMapUpdateUserCommandToUser() {
-        User result = UserMapper.commandToUser(updateUserCommand);
+        Mono<User> result = UserMapper.commandToUser(updateUserCommand);
 
-        assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(updateUserCommand.id());
-        assertThat(result.name()).isEqualTo(updateUserCommand.name());
-        assertThat(result.lastName()).isEqualTo(updateUserCommand.lastName());
-        assertThat(result.address()).isEqualTo(updateUserCommand.address());
-        assertThat(result.phoneNumber()).isNotNull();
-        assertThat(result.phoneNumber().value()).isEqualTo(updateUserCommand.phoneNumber());
-        assertThat(result.birthDate()).isEqualTo(updateUserCommand.birthDate());
-        assertThat(result.email()).isNotNull();
-        assertThat(result.email().value()).isEqualTo(updateUserCommand.email());
-        assertThat(result.baseSalary()).isEqualTo(updateUserCommand.baseSalary());
+        StepVerifier.create(result)
+                .assertNext(user -> {
+                    assertThat(user).isNotNull();
+                    assertThat(user.id()).isEqualTo(updateUserCommand.id());
+                    assertThat(user.name()).isEqualTo(updateUserCommand.name());
+                    assertThat(user.lastName()).isEqualTo(updateUserCommand.lastName());
+                    assertThat(user.address()).isEqualTo(updateUserCommand.address());
+                    assertThat(user.phoneNumber()).isNotNull();
+                    assertThat(user.phoneNumber().value()).isEqualTo(updateUserCommand.phoneNumber());
+                    assertThat(user.birthDate()).isEqualTo(updateUserCommand.birthDate());
+                    assertThat(user.email()).isNotNull();
+                    assertThat(user.email().value()).isEqualTo(updateUserCommand.email());
+                    assertThat(user.baseSalary()).isEqualTo(updateUserCommand.baseSalary());
+                })
+                .verifyComplete();
     }
 
     @Test
@@ -115,34 +125,50 @@ class UserMapperTest {
 
     @Test
     void shouldCreatePhoneNumberValueObjectFromCreateCommand() {
-        User result = UserMapper.commandToUser(createUserCommand);
+        Mono<User> result = UserMapper.commandToUser(createUserCommand);
 
-        assertThat(result.phoneNumber()).isInstanceOf(PhoneNumber.class);
-        assertThat(result.phoneNumber().value()).isEqualTo(USER_PHONE_NUMBER);
+        StepVerifier.create(result)
+                .assertNext(user -> {
+                    assertThat(user.phoneNumber()).isInstanceOf(PhoneNumber.class);
+                    assertThat(user.phoneNumber().value()).isEqualTo(USER_PHONE_NUMBER);
+                })
+                .verifyComplete();
     }
 
     @Test
     void shouldCreateEmailValueObjectFromCreateCommand() {
-        User result = UserMapper.commandToUser(createUserCommand);
+        Mono<User> result = UserMapper.commandToUser(createUserCommand);
 
-        assertThat(result.email()).isInstanceOf(Email.class);
-        assertThat(result.email().value()).isEqualTo(USER_EMAIL);
+        StepVerifier.create(result)
+                .assertNext(user -> {
+                    assertThat(user.email()).isInstanceOf(Email.class);
+                    assertThat(user.email().value()).isEqualTo(USER_EMAIL);
+                })
+                .verifyComplete();
     }
 
     @Test
     void shouldCreatePhoneNumberValueObjectFromUpdateCommand() {
-        User result = UserMapper.commandToUser(updateUserCommand);
+        Mono<User> result = UserMapper.commandToUser(updateUserCommand);
 
-        assertThat(result.phoneNumber()).isInstanceOf(PhoneNumber.class);
-        assertThat(result.phoneNumber().value()).isEqualTo(USER_PHONE_NUMBER);
+        StepVerifier.create(result)
+                .assertNext(user -> {
+                    assertThat(user.phoneNumber()).isInstanceOf(PhoneNumber.class);
+                    assertThat(user.phoneNumber().value()).isEqualTo(USER_PHONE_NUMBER);
+                })
+                .verifyComplete();
     }
 
     @Test
     void shouldCreateEmailValueObjectFromUpdateCommand() {
-        User result = UserMapper.commandToUser(updateUserCommand);
+        Mono<User> result = UserMapper.commandToUser(updateUserCommand);
 
-        assertThat(result.email()).isInstanceOf(Email.class);
-        assertThat(result.email().value()).isEqualTo(USER_EMAIL);
+        StepVerifier.create(result)
+                .assertNext(user -> {
+                    assertThat(user.email()).isInstanceOf(Email.class);
+                    assertThat(user.email().value()).isEqualTo(USER_EMAIL);
+                })
+                .verifyComplete();
     }
 
     @Test
@@ -157,84 +183,113 @@ class UserMapperTest {
 
     @Test
     void shouldSetNullIdForCreateUserCommand() {
-        User result = UserMapper.commandToUser(createUserCommand);
+        Mono<User> result = UserMapper.commandToUser(createUserCommand);
 
-        assertThat(result.id()).isNull();
+        StepVerifier.create(result)
+                .assertNext(user -> assertThat(user.id()).isNull())
+                .verifyComplete();
     }
 
     @Test
     void shouldPreserveIdForUpdateUserCommand() {
-        User result = UserMapper.commandToUser(updateUserCommand);
+        Mono<User> result = UserMapper.commandToUser(updateUserCommand);
 
-        assertThat(result.id()).isEqualTo(USER_ID);
+        StepVerifier.create(result)
+                .assertNext(user -> assertThat(user.id()).isEqualTo(USER_ID))
+                .verifyComplete();
     }
 
     @Test
     void shouldPreserveAllDataTypesInMappings() {
-        User userFromCreate = UserMapper.commandToUser(createUserCommand);
-        User userFromUpdate = UserMapper.commandToUser(updateUserCommand);
+        Mono<User> userFromCreateMono = UserMapper.commandToUser(createUserCommand);
+        Mono<User> userFromUpdateMono = UserMapper.commandToUser(updateUserCommand);
         UserResponse response = UserMapper.userToResponse(user);
 
-        assertThat(userFromCreate.birthDate()).isInstanceOf(LocalDate.class);
-        assertThat(userFromCreate.baseSalary()).isInstanceOf(BigDecimal.class);
-        assertThat(userFromUpdate.birthDate()).isInstanceOf(LocalDate.class);
-        assertThat(userFromUpdate.baseSalary()).isInstanceOf(BigDecimal.class);
+        StepVerifier.create(userFromCreateMono)
+                .assertNext(userFromCreate -> {
+                    assertThat(userFromCreate.birthDate()).isInstanceOf(LocalDate.class);
+                    assertThat(userFromCreate.baseSalary()).isInstanceOf(BigDecimal.class);
+                    assertThat(userFromCreate.birthDate()).isEqualTo(USER_BIRTH_DATE);
+                    assertThat(userFromCreate.baseSalary()).isEqualTo(USER_BASE_SALARY);
+                })
+                .verifyComplete();
+
+        StepVerifier.create(userFromUpdateMono)
+                .assertNext(userFromUpdate -> {
+                    assertThat(userFromUpdate.birthDate()).isInstanceOf(LocalDate.class);
+                    assertThat(userFromUpdate.baseSalary()).isInstanceOf(BigDecimal.class);
+                    assertThat(userFromUpdate.birthDate()).isEqualTo(USER_BIRTH_DATE);
+                    assertThat(userFromUpdate.baseSalary()).isEqualTo(USER_BASE_SALARY);
+                })
+                .verifyComplete();
+
         assertThat(response.birthDate()).isInstanceOf(LocalDate.class);
         assertThat(response.baseSalary()).isInstanceOf(BigDecimal.class);
-
-        assertThat(userFromCreate.birthDate()).isEqualTo(USER_BIRTH_DATE);
-        assertThat(userFromCreate.baseSalary()).isEqualTo(USER_BASE_SALARY);
-        assertThat(userFromUpdate.birthDate()).isEqualTo(USER_BIRTH_DATE);
-        assertThat(userFromUpdate.baseSalary()).isEqualTo(USER_BASE_SALARY);
         assertThat(response.birthDate()).isEqualTo(USER_BIRTH_DATE);
         assertThat(response.baseSalary()).isEqualTo(USER_BASE_SALARY);
     }
 
     @Test
     void shouldHandleRoundTripMappingFromCreateCommand() {
-        User userFromCommand = UserMapper.commandToUser(createUserCommand);
-        UserResponse response = UserMapper.userToResponse(userFromCommand);
+        Mono<UserResponse> result = UserMapper.commandToUser(createUserCommand)
+                .map(UserMapper::userToResponse);
 
-        assertThat(response.name()).isEqualTo(createUserCommand.name());
-        assertThat(response.lastName()).isEqualTo(createUserCommand.lastName());
-        assertThat(response.address()).isEqualTo(createUserCommand.address());
-        assertThat(response.phoneNumber()).isEqualTo(createUserCommand.phoneNumber());
-        assertThat(response.birthDate()).isEqualTo(createUserCommand.birthDate());
-        assertThat(response.email()).isEqualTo(createUserCommand.email());
-        assertThat(response.baseSalary()).isEqualTo(createUserCommand.baseSalary());
+        StepVerifier.create(result)
+                .assertNext(response -> {
+                    assertThat(response.name()).isEqualTo(createUserCommand.name());
+                    assertThat(response.lastName()).isEqualTo(createUserCommand.lastName());
+                    assertThat(response.address()).isEqualTo(createUserCommand.address());
+                    assertThat(response.phoneNumber()).isEqualTo(createUserCommand.phoneNumber());
+                    assertThat(response.birthDate()).isEqualTo(createUserCommand.birthDate());
+                    assertThat(response.email()).isEqualTo(createUserCommand.email());
+                    assertThat(response.baseSalary()).isEqualTo(createUserCommand.baseSalary());
+                })
+                .verifyComplete();
     }
 
     @Test
     void shouldHandleRoundTripMappingFromUpdateCommand() {
-        User userFromCommand = UserMapper.commandToUser(updateUserCommand);
-        UserResponse response = UserMapper.userToResponse(userFromCommand);
+        Mono<UserResponse> result = UserMapper.commandToUser(updateUserCommand)
+                .map(UserMapper::userToResponse);
 
-        assertThat(response.id()).isEqualTo(updateUserCommand.id());
-        assertThat(response.name()).isEqualTo(updateUserCommand.name());
-        assertThat(response.lastName()).isEqualTo(updateUserCommand.lastName());
-        assertThat(response.address()).isEqualTo(updateUserCommand.address());
-        assertThat(response.phoneNumber()).isEqualTo(updateUserCommand.phoneNumber());
-        assertThat(response.birthDate()).isEqualTo(updateUserCommand.birthDate());
-        assertThat(response.email()).isEqualTo(updateUserCommand.email());
-        assertThat(response.baseSalary()).isEqualTo(updateUserCommand.baseSalary());
+        StepVerifier.create(result)
+                .assertNext(response -> {
+                    assertThat(response.id()).isEqualTo(updateUserCommand.id());
+                    assertThat(response.name()).isEqualTo(updateUserCommand.name());
+                    assertThat(response.lastName()).isEqualTo(updateUserCommand.lastName());
+                    assertThat(response.address()).isEqualTo(updateUserCommand.address());
+                    assertThat(response.phoneNumber()).isEqualTo(updateUserCommand.phoneNumber());
+                    assertThat(response.birthDate()).isEqualTo(updateUserCommand.birthDate());
+                    assertThat(response.email()).isEqualTo(updateUserCommand.email());
+                    assertThat(response.baseSalary()).isEqualTo(updateUserCommand.baseSalary());
+                })
+                .verifyComplete();
     }
 
     @Test
     void shouldCreateValidDomainObjectsWithValidation() {
-        User userFromCreate = UserMapper.commandToUser(createUserCommand);
-        User userFromUpdate = UserMapper.commandToUser(updateUserCommand);
+        Mono<User> userFromCreateMono = UserMapper.commandToUser(createUserCommand);
+        Mono<User> userFromUpdateMono = UserMapper.commandToUser(updateUserCommand);
 
-        assertThat(userFromCreate.name()).isNotNull();
-        assertThat(userFromCreate.lastName()).isNotNull();
-        assertThat(userFromCreate.phoneNumber()).isNotNull();
-        assertThat(userFromCreate.email()).isNotNull();
-        assertThat(userFromCreate.baseSalary()).isNotNull();
+        StepVerifier.create(userFromCreateMono)
+                .assertNext(userFromCreate -> {
+                    assertThat(userFromCreate.name()).isNotNull();
+                    assertThat(userFromCreate.lastName()).isNotNull();
+                    assertThat(userFromCreate.phoneNumber()).isNotNull();
+                    assertThat(userFromCreate.email()).isNotNull();
+                    assertThat(userFromCreate.baseSalary()).isNotNull();
+                })
+                .verifyComplete();
 
-        assertThat(userFromUpdate.id()).isNotNull();
-        assertThat(userFromUpdate.name()).isNotNull();
-        assertThat(userFromUpdate.lastName()).isNotNull();
-        assertThat(userFromUpdate.phoneNumber()).isNotNull();
-        assertThat(userFromUpdate.email()).isNotNull();
-        assertThat(userFromUpdate.baseSalary()).isNotNull();
+        StepVerifier.create(userFromUpdateMono)
+                .assertNext(userFromUpdate -> {
+                    assertThat(userFromUpdate.id()).isNotNull();
+                    assertThat(userFromUpdate.name()).isNotNull();
+                    assertThat(userFromUpdate.lastName()).isNotNull();
+                    assertThat(userFromUpdate.phoneNumber()).isNotNull();
+                    assertThat(userFromUpdate.email()).isNotNull();
+                    assertThat(userFromUpdate.baseSalary()).isNotNull();
+                })
+                .verifyComplete();
     }
 }

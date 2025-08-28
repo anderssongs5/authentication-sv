@@ -38,18 +38,21 @@ public class HandlerV1 {
     }
     
     private <T> Mono<T> validateRequest(T request) {
-        Errors errors = new BeanPropertyBindingResult(request, request.getClass().getSimpleName());
-        validator.validate(request, errors);
-        
-        if (errors.hasErrors()) {
-            String errorMessage = errors.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
-                    .orElse("Validation failed");
-            return Mono.error(new IllegalArgumentException(errorMessage));
-        }
-        
-        return Mono.just(request);
+        return Mono.fromCallable(() -> {
+            Errors errors = new BeanPropertyBindingResult(request, request.getClass().getSimpleName());
+            validator.validate(request, errors);
+            return errors;
+        })
+        .flatMap(errors -> {
+            if (errors.hasErrors()) {
+                String errorMessage = errors.getAllErrors().stream()
+                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                        .reduce((msg1, msg2) -> msg1 + "; " + msg2)
+                        .orElse("Validation failed");
+                return Mono.error(new IllegalArgumentException(errorMessage));
+            }
+            return Mono.just(request);
+        });
     }
 
     public Mono<ServerResponse> getAllUsers(ServerRequest serverRequest) {
@@ -67,8 +70,7 @@ public class HandlerV1 {
                             .build();
                     
                     return ServerResponse.ok().bodyValue(successResponse);
-                })
-                .doOnError(throwable -> log.error("Error getting all users: {}", throwable.getMessage()));
+                });
     }
 
     public Mono<ServerResponse> getUserById(ServerRequest serverRequest) {
@@ -86,8 +88,7 @@ public class HandlerV1 {
                             .build();
                     
                     return ServerResponse.ok().bodyValue(successResponse);
-                })
-                .doOnError(throwable -> log.error("Error getting user with ID {}: {}", id, throwable.getMessage()));
+                });
     }
 
     public Mono<ServerResponse> createUser(ServerRequest serverRequest) {
@@ -108,8 +109,7 @@ public class HandlerV1 {
                     
                     return ServerResponse.created(URI.create("/api/v1/users/" + user.id()))
                             .bodyValue(successResponse);
-                })
-                .doOnError(throwable -> log.error("Error creating user: {}", throwable.getMessage()));
+                });
     }
     
     public Mono<ServerResponse> updateUser(ServerRequest serverRequest) {
@@ -130,8 +130,7 @@ public class HandlerV1 {
                             .build();
                     
                     return ServerResponse.ok().bodyValue(successResponse);
-                })
-                .doOnError(throwable -> log.error("Error updating user with ID {}: {}", id, throwable.getMessage()));
+                });
     }
     
     public Mono<ServerResponse> deleteUser(ServerRequest serverRequest) {
@@ -170,7 +169,6 @@ public class HandlerV1 {
                             .build();
                     
                     return ServerResponse.ok().bodyValue(successResponse);
-                })
-                .doOnError(throwable -> log.error("Error getting user with email {}: {}", email, throwable.getMessage()));
+                });
     }
 }

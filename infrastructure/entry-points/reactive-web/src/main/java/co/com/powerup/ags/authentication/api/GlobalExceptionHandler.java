@@ -23,6 +23,8 @@ import java.util.Map;
 @Component
 public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
     
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    
     public GlobalExceptionHandler(ErrorAttributes errorAttributes, ApplicationContext applicationContext,
                                   ServerCodecConfigurer serverCodecConfigurer) {
         super(errorAttributes, new WebProperties.Resources(), applicationContext);
@@ -32,17 +34,27 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
     
     @Override
     protected RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes) {
-
         return RouterFunctions.route(RequestPredicates.all(), this::renderErrorResponse);
     }
     
-    private Mono<ServerResponse> renderErrorResponse(ServerRequest serverRequest) {
-        Map<String, Object> errorProperties = getErrorAttributes(serverRequest, ErrorAttributeOptions.defaults());
-
-        int status = (Integer) errorProperties.get("status");
-
+    private Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
+        return Mono.fromCallable(() -> getErrorAttributes(request, ErrorAttributeOptions.defaults()))
+                .doOnNext(errorAttributes -> logError(getError(request), request))
+                .flatMap(this::createServerResponse);
+    }
+    
+    private Mono<ServerResponse> createServerResponse(Map<String, Object> errorAttributes) {
+        int status = (Integer) errorAttributes.get("status");
+        
         return ServerResponse.status(status)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(errorProperties));
+                .bodyValue(errorAttributes);
+    }
+    
+    private void logError(Throwable error, ServerRequest request) {
+        if (error != null) {
+            log.error("Error processing request {} {}: {}",
+                    request.method(), request.path(), error.getMessage(), error);
+        }
     }
 }

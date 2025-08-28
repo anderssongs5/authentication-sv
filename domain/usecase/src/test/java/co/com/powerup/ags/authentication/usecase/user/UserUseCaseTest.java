@@ -1,7 +1,7 @@
 package co.com.powerup.ags.authentication.usecase.user;
 
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
-import co.com.powerup.ags.authentication.model.common.exception.EntityNotFoundException;
+import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import co.com.powerup.ags.authentication.model.user.User;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
@@ -86,14 +86,11 @@ class UserUseCaseTest {
 
     @Test
     void shouldCreateUserSuccessfullyWhenEmailDoesNotExist() {
-        // Given
         when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(validUser));
 
-        // When
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(userResponse -> {
                     assertThat(userResponse).isNotNull();
@@ -108,46 +105,38 @@ class UserUseCaseTest {
                 })
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).existsByEmail(USER_EMAIL);
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     void shouldThrowDataAlreadyExistsExceptionWhenEmailAlreadyExists() {
-        // Given
         when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(true));
 
-        // When
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof DataAlreadyExistsException &&
                         throwable.getMessage().equals("User already exists with email: " + USER_EMAIL))
                 .verify();
 
-        // Verify interactions
         verify(userRepository).existsByEmail(USER_EMAIL);
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void shouldGenerateUuidForNewUser() {
-        // Given
         when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
             assertThat(savedUser.id()).isNotNull();
-            assertThat(UUID.fromString(savedUser.id())).isNotNull(); // Validates UUID format
+            assertThat(UUID.fromString(savedUser.id())).isNotNull();
             return Mono.just(savedUser);
         });
 
-        // When
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(userResponse -> {
                     assertThat(userResponse.id()).isNotNull();
@@ -158,14 +147,11 @@ class UserUseCaseTest {
 
     @Test
     void shouldHandleRepositoryErrorDuringExistenceCheck() {
-        // Given
         when(userRepository.existsByEmail(USER_EMAIL))
                 .thenReturn(Mono.error(new RuntimeException("Unexpected database error")));
 
-        // When
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
@@ -175,15 +161,12 @@ class UserUseCaseTest {
 
     @Test
     void shouldHandleRepositoryErrorDuringSave() {
-        // Given
         when(userRepository.existsByEmail(USER_EMAIL)).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class)))
                 .thenReturn(Mono.error(new RuntimeException("Save failed")));
 
-        // When
         Mono<UserResponse> result = userUseCase.createUser(validCreateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
@@ -193,14 +176,11 @@ class UserUseCaseTest {
 
     @Test
     void shouldUpdateUserSuccessfullyWhenUserExists() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(validUser));
 
-        // When
         Mono<UserResponse> result = userUseCase.updateUser(validUpdateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(userResponse -> {
                     assertThat(userResponse).isNotNull();
@@ -210,41 +190,33 @@ class UserUseCaseTest {
                 })
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).findById(USER_ID);
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     void shouldThrowEntityNotFoundExceptionWhenUserDoesNotExistForUpdate() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.empty());
 
-        // When
         Mono<UserResponse> result = userUseCase.updateUser(validUpdateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
-                        throwable instanceof EntityNotFoundException &&
+                        throwable instanceof UserNotFoundException &&
                         throwable.getMessage().equals("User not found with ID: " + USER_ID))
                 .verify();
 
-        // Verify interactions
         verify(userRepository).findById(USER_ID);
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void shouldHandleRepositoryErrorDuringFindForUpdate() {
-        // Given
         when(userRepository.findById(USER_ID))
                 .thenReturn(Mono.error(new RuntimeException("Find failed")));
 
-        // When
         Mono<UserResponse> result = userUseCase.updateUser(validUpdateUserCommand);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
@@ -254,13 +226,10 @@ class UserUseCaseTest {
 
     @Test
     void shouldReturnUserSuccessfullyWhenUserExists() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
 
-        // When
         Mono<UserResponse> result = userUseCase.getUserById(USER_ID);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(userResponse -> {
                     assertThat(userResponse).isNotNull();
@@ -270,55 +239,44 @@ class UserUseCaseTest {
                 })
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).findById(USER_ID);
     }
 
     @Test
     void shouldThrowEntityNotFoundExceptionWhenGetUserByIdAndUserDoesNotExist() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.empty());
 
-        // When
         Mono<UserResponse> result = userUseCase.getUserById(USER_ID);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
-                        throwable instanceof EntityNotFoundException &&
+                        throwable instanceof UserNotFoundException &&
                         throwable.getMessage().equals("User not found with ID: " + USER_ID))
                 .verify();
 
-        // Verify interactions
         verify(userRepository).findById(USER_ID);
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionWhenIdIsNull() {
-        // When
         Mono<UserResponse> result = userUseCase.getUserById(null);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof IllegalArgumentException &&
                         throwable.getMessage().equals("User ID cannot be null"))
                 .verify();
 
-        // Verify interactions
         verify(userRepository, never()).findById(any());
     }
 
     @Test
     void shouldHandleRepositoryErrorDuringGetUserById() {
-        // Given
         when(userRepository.findById(USER_ID))
                 .thenReturn(Mono.error(new RuntimeException("Database connection failed")));
 
-        // When
         Mono<UserResponse> result = userUseCase.getUserById(USER_ID);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
@@ -328,53 +286,42 @@ class UserUseCaseTest {
 
     @Test
     void shouldDeleteUserSuccessfullyWhenUserExists() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
         when(userRepository.deleteById(USER_ID)).thenReturn(Mono.empty());
 
-        // When
         Mono<Void> result = userUseCase.deleteUser(USER_ID);
 
-        // Then
         StepVerifier.create(result)
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).findById(USER_ID);
         verify(userRepository).deleteById(USER_ID);
     }
 
     @Test
     void shouldThrowEntityNotFoundExceptionWhenDeleteUserAndUserDoesNotExist() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.empty());
 
-        // When
         Mono<Void> result = userUseCase.deleteUser(USER_ID);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
-                        throwable instanceof EntityNotFoundException &&
+                        throwable instanceof UserNotFoundException &&
                         throwable.getMessage().equals("User not found with ID: " + USER_ID))
                 .verify();
 
-        // Verify interactions
         verify(userRepository).findById(USER_ID);
         verify(userRepository, never()).deleteById(any());
     }
 
     @Test
     void shouldHandleRepositoryErrorDuringDelete() {
-        // Given
         when(userRepository.findById(USER_ID)).thenReturn(Mono.just(validUser));
         when(userRepository.deleteById(USER_ID))
                 .thenReturn(Mono.error(new RuntimeException("Delete failed")));
 
-        // When
         Mono<Void> result = userUseCase.deleteUser(USER_ID);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
@@ -384,7 +331,6 @@ class UserUseCaseTest {
 
     @Test
     void shouldReturnAllUsersSuccessfully() {
-        // Given
         User user2 = new User(
                 "different-id",
                 "Jane",
@@ -398,10 +344,8 @@ class UserUseCaseTest {
 
         when(userRepository.findAll()).thenReturn(Flux.just(validUser, user2));
 
-        // When
         Flux<UserResponse> result = userUseCase.getAllUsers();
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(userResponse -> {
                     assertThat(userResponse.id()).isEqualTo(USER_ID);
@@ -413,36 +357,28 @@ class UserUseCaseTest {
                 })
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).findAll();
     }
 
     @Test
     void shouldReturnEmptyFluxWhenNoUsersExist() {
-        // Given
         when(userRepository.findAll()).thenReturn(Flux.empty());
 
-        // When
         Flux<UserResponse> result = userUseCase.getAllUsers();
 
-        // Then
         StepVerifier.create(result)
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).findAll();
     }
 
     @Test
     void shouldHandleRepositoryErrorDuringFindAll() {
-        // Given
         when(userRepository.findAll())
                 .thenReturn(Flux.error(new RuntimeException("Database unavailable")));
 
-        // When
         Flux<UserResponse> result = userUseCase.getAllUsers();
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&
@@ -452,13 +388,10 @@ class UserUseCaseTest {
 
     @Test
     void shouldReturnUserSuccessfullyWhenEmailExists() {
-        // Given
         when(userRepository.findByEmail(USER_EMAIL)).thenReturn(Mono.just(validUser));
 
-        // When
         Mono<UserResponse> result = userUseCase.getUserByEmail(USER_EMAIL);
 
-        // Then
         StepVerifier.create(result)
                 .assertNext(userResponse -> {
                     assertThat(userResponse).isNotNull();
@@ -467,87 +400,70 @@ class UserUseCaseTest {
                 })
                 .verifyComplete();
 
-        // Verify interactions
         verify(userRepository).findByEmail(USER_EMAIL);
     }
 
     @Test
     void shouldThrowEntityNotFoundExceptionWhenEmailDoesNotExist() {
-        // Given
         when(userRepository.findByEmail(USER_EMAIL)).thenReturn(Mono.empty());
 
-        // When
         Mono<UserResponse> result = userUseCase.getUserByEmail(USER_EMAIL);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
-                        throwable instanceof EntityNotFoundException &&
+                        throwable instanceof UserNotFoundException &&
                         throwable.getMessage().equals("User not found with email: " + USER_EMAIL))
                 .verify();
 
-        // Verify interactions
         verify(userRepository).findByEmail(USER_EMAIL);
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailIsNull() {
-        // When
         Mono<UserResponse> result = userUseCase.getUserByEmail(null);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof IllegalArgumentException &&
                         throwable.getMessage().equals("Email cannot be null or empty"))
                 .verify();
 
-        // Verify interactions
         verify(userRepository, never()).findByEmail(any());
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailIsEmpty() {
-        // When
         Mono<UserResponse> result = userUseCase.getUserByEmail("");
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof IllegalArgumentException &&
                         throwable.getMessage().equals("Email cannot be null or empty"))
                 .verify();
 
-        // Verify interactions
         verify(userRepository, never()).findByEmail(any());
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionWhenEmailIsWhitespace() {
-        // When
         Mono<UserResponse> result = userUseCase.getUserByEmail("   ");
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof IllegalArgumentException &&
                         throwable.getMessage().equals("Email cannot be null or empty"))
                 .verify();
 
-        // Verify interactions
         verify(userRepository, never()).findByEmail(any());
     }
 
     @Test
     void shouldHandleRepositoryErrorDuringFindByEmail() {
-        // Given
         when(userRepository.findByEmail(USER_EMAIL))
                 .thenReturn(Mono.error(new RuntimeException("Query failed")));
 
-        // When
         Mono<UserResponse> result = userUseCase.getUserByEmail(USER_EMAIL);
 
-        // Then
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof RuntimeException &&

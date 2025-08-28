@@ -1,7 +1,7 @@
 package co.com.powerup.ags.authentication.api.helper;
 
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
-import co.com.powerup.ags.authentication.model.common.exception.EntityNotFoundException;
+import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -33,9 +33,9 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
             case DataAlreadyExistsException dataAlreadyExistsException ->
                     setErrorAttributes(errorAttributes, HttpStatus.CONFLICT, "DATA_ALREADY_EXISTS",
                             "Conflict", dataAlreadyExistsException.getMessage(), serverRequest.path());
-            case EntityNotFoundException entityNotFoundException ->
+            case UserNotFoundException userNotFoundException ->
                     setErrorAttributes(errorAttributes, HttpStatus.NOT_FOUND, "DATA_NOT_FOUND",
-                            "Not Found", entityNotFoundException.getMessage(), serverRequest.path());
+                            "Not Found", userNotFoundException.getMessage(), serverRequest.path());
             case IllegalArgumentException illegalArgumentException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "INVALID_INPUT",
                             "Bad Request", error.getMessage(), serverRequest.path());
@@ -56,6 +56,7 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
         }
         
         errorAttributes.put("timestamp", LocalDateTime.now());
+        errorAttributes.put("requestId", serverRequest.exchange().getRequest().getId());
         return errorAttributes;
     }
     

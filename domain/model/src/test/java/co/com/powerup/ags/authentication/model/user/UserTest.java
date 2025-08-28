@@ -36,7 +36,6 @@ class UserTest {
                 VALID_BASE_SALARY
         );
         
-        // Then
         assertThat(user).isNotNull();
         assertThat(user.id()).isEqualTo(VALID_ID);
         assertThat(user.name()).isEqualTo(VALID_NAME);
@@ -62,7 +61,6 @@ class UserTest {
                 VALID_BASE_SALARY
         );
         
-        // Then
         assertThat(user.birthDate()).isEqualTo(eighteenYearsAgo);
     }
     
@@ -106,7 +104,6 @@ class UserTest {
     @NullAndEmptySource
     @ValueSource(strings = {"   ", "\t", "\n", ""})
     void shouldThrowExceptionForInvalidNames(String invalidName) {
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 invalidName,
@@ -125,7 +122,6 @@ class UserTest {
     @NullAndEmptySource
     @ValueSource(strings = {"   ", "\t", "\n"})
     void shouldThrowExceptionForInvalidLastNames(String invalidLastName) {
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -142,7 +138,6 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForNullPhoneNumber() {
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -159,7 +154,6 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForNullEmail() {
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -176,7 +170,6 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForNullBirthDate() {
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -193,10 +186,8 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForFutureBirthDate() {
-        // Given
         LocalDate futureDate = LocalDate.now().plusDays(1);
         
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -213,10 +204,8 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForUserUnder18YearsOld() {
-        // Given
         LocalDate seventeenYearsAgo = LocalDate.now().minusYears(17);
         
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -233,7 +222,6 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForNullBaseSalary() {
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -250,10 +238,8 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForNegativeBaseSalary() {
-        // Given
         BigDecimal negativeSalary = new BigDecimal("-1000");
         
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -270,10 +256,8 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForZeroBaseSalary() {
-        // Given
         BigDecimal negativeSalary = BigDecimal.ONE.negate();
         
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -290,10 +274,8 @@ class UserTest {
     
     @Test
     void shouldThrowExceptionForSalaryExceedingMaximum() {
-        // Given
         BigDecimal excessiveSalary = new BigDecimal("15000001");
         
-        // When & Then
         assertThatThrownBy(() -> new User(
                 VALID_ID,
                 VALID_NAME,
@@ -310,7 +292,6 @@ class UserTest {
     
     @Test
     void shouldBeEqualWhenIdsAreTheSame() {
-        // Given
         User user1 = new User(
                 VALID_ID,
                 VALID_NAME,
@@ -332,14 +313,12 @@ class UserTest {
                 new BigDecimal("100000")
         );
         
-        // When & Then
         assertThat(user1).isEqualTo(user2);
         assertThat(user1.hashCode()).isEqualTo(user2.hashCode());
     }
     
     @Test
     void shouldNotBeEqualWhenIdsAreDifferent() {
-        // Given
         User user1 = new User(
                 VALID_ID,
                 VALID_NAME,
@@ -361,13 +340,11 @@ class UserTest {
                 VALID_BASE_SALARY
         );
         
-        // When & Then
         assertThat(user1).isNotEqualTo(user2);
     }
     
     @Test
     void shouldHandleEqualsWithNullAndDifferentTypes() {
-        // Given
         User user = new User(
                 VALID_ID,
                 VALID_NAME,
@@ -379,7 +356,6 @@ class UserTest {
                 VALID_BASE_SALARY
         );
         
-        // When & Then
         assertThat(user).isNotEqualTo(null);
         assertThat(user).isNotEqualTo("not a user");
         assertThat(user).isEqualTo(user);

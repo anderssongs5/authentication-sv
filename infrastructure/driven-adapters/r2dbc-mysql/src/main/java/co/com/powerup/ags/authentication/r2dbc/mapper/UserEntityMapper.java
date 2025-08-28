@@ -1,6 +1,8 @@
 package co.com.powerup.ags.authentication.r2dbc.mapper;
 
 import co.com.powerup.ags.authentication.model.user.User;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
 import co.com.powerup.ags.authentication.r2dbc.entity.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
