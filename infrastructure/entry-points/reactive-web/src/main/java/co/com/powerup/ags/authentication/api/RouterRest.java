@@ -509,18 +509,18 @@ public class RouterRest {
                     path = "/api/v1/users/search",
                     method = RequestMethod.GET,
                     beanClass = HandlerV1.class,
-                    beanMethod = "getUserByEmail",
+                    beanMethod = "getUserByIdNumber",
                     operation = @Operation(
-                            operationId = "getUserByEmail",
-                            summary = "Search user by email",
-                            description = "Retrieves a user by their email address",
+                            operationId = "getUserByIdNumber",
+                            summary = "Search user by ID number",
+                            description = "Retrieves a user by their ID number",
                             parameters = {
                                     @Parameter(
-                                            name = "email",
-                                            description = "User email address",
+                                            name = "idNumber",
+                                            description = "User ID number",
                                             required = true,
                                             in = ParameterIn.QUERY,
-                                            schema = @Schema(type = "string", example = "steven.garcia@test.com")
+                                            schema = @Schema(type = "string", example = "123456789")
                                     )
                             },
                             responses = {
@@ -529,7 +529,28 @@ public class RouterRest {
                                             description = "User found successfully",
                                             content = @Content(
                                                     mediaType = "application/json",
-                                                    schema = @Schema(implementation = SuccessResponse.class)
+                                                    schema = @Schema(implementation = SuccessResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Success Response",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/users/search?idNumber=123456789",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "data": {
+                                                                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                                                                            "name": "Steven",
+                                                                            "lastName": "Garcia",
+                                                                            "address": "Carrera 60 # 53-14",
+                                                                            "phoneNumber": "1234567890",
+                                                                            "birthDate": "1990-10-01",
+                                                                            "email": "steven.garcia@test.com",
+                                                                            "baseSalary": 50000.00,
+                                                                            "idNumber": "123456789"
+                                                                        }
+                                                                    }
+                                                                    """
+                                                    )
                                             )
                                     ),
                                     @ApiResponse(
@@ -537,7 +558,43 @@ public class RouterRest {
                                             description = "User not found",
                                             content = @Content(
                                                     mediaType = "application/json",
-                                                    schema = @Schema(implementation = ErrorResponse.class)
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Not Found Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/users/search?idNumber=123456789",
+                                                                        "status": 404,
+                                                                        "error": "Not Found",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "ENTITY_NOT_FOUND",
+                                                                        "message": "User not found with id number: 123456789"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Internal server error",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Internal Server Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/users/search?idNumber=123456789",
+                                                                        "status": 500,
+                                                                        "error": "Internal Server Error",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "UNEXPECTED_ERROR",
+                                                                        "message": "An unexpected error occurred"
+                                                                    }
+                                                                    """
+                                                    )
                                             )
                                     )
                             }
@@ -551,7 +608,7 @@ public class RouterRest {
                         builder -> builder
                                 .GET("", handlerV1::getAllUsers)
                                 .POST("", handlerV1::createUser)
-                                .GET("/search", handlerV1::getUserByEmail)
+                                .GET("/search", handlerV1::getUserByIdNumber)
                                 .GET(ID_PATH_PARAM, handlerV1::getUserById)
                                 .PUT(ID_PATH_PARAM, handlerV1::updateUser)
                                 .DELETE(ID_PATH_PARAM, handlerV1::deleteUser))

@@ -117,31 +117,6 @@ class UserReactiveRepositoryAdapterTest {
         verify(repository).findAll();
     }
 
-    @Test
-    void mustFindByEmail() {
-        when(repository.findByEmail(anyString())).thenReturn(Mono.just(validUserEntity));
-
-        Mono<User> result = repositoryAdapter.findByEmail(USER_EMAIL);
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.email().value().equals(USER_EMAIL))
-                .verifyComplete();
-        
-        verify(repository).findByEmail(USER_EMAIL);
-    }
-    
-    @Test
-    void mustReturnEmptyWhenEmailNotFound() {
-        when(repository.findByEmail(anyString())).thenReturn(Mono.empty());
-        
-        Mono<User> result = repositoryAdapter.findByEmail(USER_EMAIL);
-        
-        StepVerifier.create(result)
-                .expectComplete()
-                .verify();
-        
-        verify(repository).findByEmail(USER_EMAIL);
-    }
     
     @Test
     void mustExistsByEmail() {
@@ -282,18 +257,6 @@ class UserReactiveRepositoryAdapterTest {
         verify(repository).findAll();
     }
 
-    @Test
-    void mustHandleDataAccessExceptionOnFindByEmail() {
-        when(repository.findByEmail(USER_EMAIL)).thenReturn(Mono.error(new DataAccessResourceFailureException("Database connection failed")));
-
-        Mono<User> result = repositoryAdapter.findByEmail(USER_EMAIL);
-
-        StepVerifier.create(result)
-                .expectError(RuntimeException.class)
-                .verify();
-
-        verify(repository).findByEmail(USER_EMAIL);
-    }
 
     @Test
     void mustHandleDataAccessExceptionOnExistsByEmail() {
@@ -372,27 +335,6 @@ class UserReactiveRepositoryAdapterTest {
         verify(repository, never()).findById(any(String.class));
     }
 
-    @Test
-    void mustThrowErrorWhenFindingByNullEmail() {
-        Mono<User> result = repositoryAdapter.findByEmail(null);
-
-        StepVerifier.create(result)
-                .expectError(IllegalArgumentException.class)
-                .verify();
-
-        verify(repository, never()).findByEmail(any());
-    }
-
-    @Test
-    void mustThrowErrorWhenFindingByEmptyEmail() {
-        Mono<User> result = repositoryAdapter.findByEmail("");
-
-        StepVerifier.create(result)
-                .expectError(IllegalArgumentException.class)
-                .verify();
-
-        verify(repository, never()).findByEmail(any());
-    }
 
     @Test
     void mustThrowErrorWhenCheckingExistenceByNullEmail() {

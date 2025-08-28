@@ -153,13 +153,13 @@ public class HandlerV1 {
                 });
     }
     
-    public Mono<ServerResponse> getUserByEmail(ServerRequest serverRequest) {
-        String email = serverRequest.queryParam("email").orElse("");
+    public Mono<ServerResponse> getUserByIdNumber(ServerRequest serverRequest) {
+        String idNumber = serverRequest.queryParam("idNumber").orElse("");
         
-        log.info("Searching user by email: {}", email);
-        return userUseCase.getUserByEmail(email)
+        log.info("Searching user by ID number: {}", idNumber);
+        return userUseCase.getUserByIdNumber(idNumber)
                 .map(requestMapper::toResponse)
-                .doOnNext(user -> log.info("User retrieved successfully by email: {}", user.email()))
+                .doOnNext(user -> log.info("User retrieved successfully by ID number: {}", user.idNumber()))
                 .flatMap(userResponse -> {
                     SuccessResponse<UserResponse> successResponse = SuccessResponse.<UserResponse>builder()
                             .timestamp(LocalDateTime.now())

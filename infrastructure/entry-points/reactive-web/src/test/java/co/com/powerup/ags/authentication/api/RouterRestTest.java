@@ -427,65 +427,6 @@ class RouterRestTest {
     }
     
     @Test
-    void testGETUserByEmail() {
-        when(userUseCase.getUserByEmail(USER_EMAIL_1)).thenReturn(Mono.just(mockUser1));
-        
-        String uri = String.format("%s/search?email=%s", USERS_PATH, USER_EMAIL_1);
-        webTestClient.get()
-                .uri(uri)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBody()
-                .jsonPath("$.message").isEqualTo(HandlerMessages.USER_RETRIEVED_SUCCESS)
-                .jsonPath("$.path").isEqualTo(uri)
-                .jsonPath("$.timestamp").exists()
-                .jsonPath("$.data.id").isEqualTo(USER_ID_1)
-                .jsonPath("$.data.name").isEqualTo(USER_NAME_1)
-                .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_1)
-                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1);
-    }
-
-    @Test
-    void testGETUserByEmailNotFound() {
-        String nonExistentEmail = "nonexistent@example.com";
-        
-        when(userUseCase.getUserByEmail(nonExistentEmail))
-                .thenReturn(Mono.error(new UserNotFoundException("User with email " + nonExistentEmail + " not found")));
-
-        String uri = String.format("%s/search?email=%s", USERS_PATH, nonExistentEmail);
-        webTestClient.get()
-                .uri(uri)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(404)
-                .expectBody()
-                .jsonPath("$.message").exists()
-                .jsonPath("$.timestamp").exists()
-                .jsonPath("$.path").isEqualTo(uri)
-                .jsonPath("$.error").exists();
-    }
-
-    @Test
-    void testGETUserByEmailWithDatabaseConnectionError() {
-        when(userUseCase.getUserByEmail(USER_EMAIL_1))
-                .thenReturn(Mono.error(new DataAccessResourceFailureException("Unable to connect to database")));
-
-        String uri = String.format("%s/search?email=%s", USERS_PATH, USER_EMAIL_1);
-        webTestClient.get()
-                .uri(uri)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(500)
-                .expectBody()
-                .jsonPath("$.message").exists()
-                .jsonPath("$.timestamp").exists()
-                .jsonPath("$.path").isEqualTo(uri)
-                .jsonPath("$.error").exists();
-    }
-    
-    @Test
     void testPOSTCreateUserWithBlankName() {
         CreateUserRequest invalidRequest = new CreateUserRequest();
         invalidRequest.setName("");
@@ -975,5 +916,101 @@ class RouterRestTest {
                 .bodyValue(invalidRequest)
                 .exchange()
                 .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGETSearchUserByIdNumber() {
+        when(userUseCase.getUserByIdNumber(USER_ID_NUMBER_1)).thenReturn(Mono.just(mockUser1));
+
+        String uri = USERS_PATH + "/search?idNumber=" + USER_ID_NUMBER_1;
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo(HandlerMessages.USER_RETRIEVED_SUCCESS)
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?idNumber=" + USER_ID_NUMBER_1)
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.data.id").isEqualTo(USER_ID_1)
+                .jsonPath("$.data.name").isEqualTo(USER_NAME_1)
+                .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_1)
+                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1)
+                .jsonPath("$.data.idNumber").isEqualTo(USER_ID_NUMBER_1);
+    }
+
+    @Test
+    void testGETSearchUserByIdNumberNotFound() {
+        String nonExistentIdNumber = "999999999";
+
+        when(userUseCase.getUserByIdNumber(nonExistentIdNumber))
+                .thenReturn(Mono.error(new UserNotFoundException("User not found with id number: " + nonExistentIdNumber)));
+
+        String uri = USERS_PATH + "/search?idNumber=" + nonExistentIdNumber;
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(404)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?idNumber=" + nonExistentIdNumber)
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testGETSearchUserByIdNumberWithEmptyIdNumber() {
+        when(userUseCase.getUserByIdNumber(""))
+                .thenReturn(Mono.error(new IllegalArgumentException("ID number cannot be null or empty")));
+
+        String uri = USERS_PATH + "/search?idNumber=";
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?idNumber=")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testGETSearchUserByIdNumberWithNullIdNumber() {
+        when(userUseCase.getUserByIdNumber(""))
+                .thenReturn(Mono.error(new IllegalArgumentException("ID number cannot be null or empty")));
+
+        String uri = USERS_PATH + "/search";
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testGETSearchUserByIdNumberWithDatabaseConnectionError() {
+        when(userUseCase.getUserByIdNumber(USER_ID_NUMBER_1))
+                .thenReturn(Mono.error(new DataAccessResourceFailureException("Unable to connect to database")));
+
+        String uri = USERS_PATH + "/search?idNumber=" + USER_ID_NUMBER_1;
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(500)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?idNumber=" + USER_ID_NUMBER_1)
+                .jsonPath("$.error").exists();
     }
 }

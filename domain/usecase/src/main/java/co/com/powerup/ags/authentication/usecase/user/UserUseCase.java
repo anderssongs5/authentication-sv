@@ -80,14 +80,6 @@ public class UserUseCase {
                 .flatMap(user -> userRepository.deleteById(id));
     }
     
-    public Mono<UserResponse> getUserByEmail(String email) {
-        return Mono.justOrEmpty(email)
-                .filter(mail -> !mail.trim().isEmpty())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
-                .flatMap(userRepository::findByEmail)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with email: " + email)))
-                .map(UserMapper::userToResponse);
-    }
     
     public Mono<UserResponse> getUserByIdNumber(String idNumber) {
         return Mono.justOrEmpty(idNumber)

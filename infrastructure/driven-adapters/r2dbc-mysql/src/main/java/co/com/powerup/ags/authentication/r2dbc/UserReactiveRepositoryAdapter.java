@@ -81,19 +81,6 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<Use
     }
     
     @Override
-    public Mono<User> findByEmail(String email) {
-        return Mono.justOrEmpty(email)
-                .filter(mail -> !mail.trim().isEmpty())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
-                .doOnNext(mail -> log.debug("Finding user by email: {}", mail))
-                .flatMap(repository::findByEmail)
-                .map(UserEntityMapper.INSTANCE::toDomain)
-                .doOnNext(user -> log.debug("Found user by email: {}", user.id()))
-                .onErrorMap(DataAccessException.class,
-                    ex -> new RuntimeException("Failed to find user by email: " + ex.getMessage(), ex));
-    }
-    
-    @Override
     public Mono<Boolean> existsByEmail(String email) {
         return Mono.justOrEmpty(email)
                 .filter(mail -> !mail.trim().isEmpty())
