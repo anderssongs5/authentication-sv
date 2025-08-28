@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-public class UserUseCase implements IUserService {
+public class UserUseCase {
     
     public static final String USER_NOT_FOUND_ID = "User not found with ID: ";
     private final UserRepository userRepository;
@@ -21,8 +21,7 @@ public class UserUseCase implements IUserService {
     public UserUseCase(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    
-    @Override
+
     public Mono<UserResponse> createUser(CreateUserCommand command) {
         return userRepository.existsByEmail(command.email())
                 .flatMap(exists -> {
@@ -47,7 +46,6 @@ public class UserUseCase implements IUserService {
                 .map(UserMapper::userToResponse);
     }
     
-    @Override
     public Mono<UserResponse> updateUser(UpdateUserCommand command) {
         return userRepository.findById(command.id())
                 .switchIfEmpty(Mono.error(new UserNotFoundException(USER_NOT_FOUND_ID + command.id())))
@@ -56,13 +54,11 @@ public class UserUseCase implements IUserService {
                 .map(UserMapper::userToResponse);
     }
     
-    @Override
     public Flux<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .map(UserMapper::userToResponse);
     }
     
-    @Override
     public Mono<UserResponse> getUserById(String id) {
         return Mono.justOrEmpty(id)
                 .filter(userId -> !userId.trim().isEmpty())
@@ -72,7 +68,6 @@ public class UserUseCase implements IUserService {
                 .map(UserMapper::userToResponse);
     }
     
-    @Override
     public Mono<Void> deleteUser(String id) {
         return Mono.justOrEmpty(id)
                 .filter(userId -> !userId.trim().isEmpty())
@@ -82,7 +77,6 @@ public class UserUseCase implements IUserService {
                 .flatMap(user -> userRepository.deleteById(id));
     }
     
-    @Override
     public Mono<UserResponse> getUserByEmail(String email) {
         return Mono.justOrEmpty(email)
                 .filter(mail -> !mail.trim().isEmpty())

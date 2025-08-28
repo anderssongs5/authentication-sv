@@ -6,7 +6,7 @@ import co.com.powerup.ags.authentication.api.dto.SuccessResponse;
 import co.com.powerup.ags.authentication.api.dto.UpdateUserRequest;
 import co.com.powerup.ags.authentication.api.dto.UserResponse;
 import co.com.powerup.ags.authentication.api.mapper.UserRequestMapper;
-import co.com.powerup.ags.authentication.usecase.user.IUserService;
+import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -28,13 +28,13 @@ public class HandlerV1 {
     private static final Logger log = LoggerFactory.getLogger(HandlerV1.class);
     
     private final UserRequestMapper requestMapper;
-    private final IUserService userService;
+    private final UserUseCase userUseCase;
     private final Validator validator;
     
-    public HandlerV1(IUserService userService, Validator validator) {
+    public HandlerV1(UserUseCase userUseCase, Validator validator) {
         this.requestMapper = UserRequestMapper.INSTANCE;
         this.validator = validator;
-        this.userService = userService;
+        this.userUseCase = userUseCase;
     }
     
     private <T> Mono<T> validateRequest(T request) {
@@ -57,7 +57,7 @@ public class HandlerV1 {
 
     public Mono<ServerResponse> getAllUsers(ServerRequest serverRequest) {
         log.info("Retrieving all users.");
-        return userService.getAllUsers()
+        return userUseCase.getAllUsers()
                 .collectList()
                 .doOnNext(users -> log.info("Retrieved {} users successfully", users.size()))
                 .map(requestMapper::toListResponse)
@@ -76,7 +76,7 @@ public class HandlerV1 {
     public Mono<ServerResponse> getUserById(ServerRequest serverRequest) {
         String id = serverRequest.pathVariable("id");
         log.info("Retrieving user with ID: {} ", id);
-        return userService.getUserById(id)
+        return userUseCase.getUserById(id)
                 .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User retrieved successfully: {}", user.id()))
                 .flatMap(userResponse -> {
@@ -96,7 +96,7 @@ public class HandlerV1 {
                 .flatMap(this::validateRequest)
                 .map(requestMapper::toCommand)
                 .doOnNext(command -> log.info("Creating new user with email: {}", command.email()))
-                .flatMap(userService::createUser)
+                .flatMap(userUseCase::createUser)
                 .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User created successfully with ID: {}", user.id()))
                 .flatMap(user -> {
@@ -118,7 +118,7 @@ public class HandlerV1 {
         return serverRequest.bodyToMono(UpdateUserRequest.class)
                 .flatMap(this::validateRequest)
                 .map(request -> requestMapper.toCommand(request, id))
-                .flatMap(userService::updateUser)
+                .flatMap(userUseCase::updateUser)
                 .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User updated successfully with ID: {}", user.id()))
                 .flatMap(userResponse -> {
@@ -136,7 +136,7 @@ public class HandlerV1 {
     public Mono<ServerResponse> deleteUser(ServerRequest serverRequest) {
         String id = serverRequest.pathVariable("id");
         log.info("Deleting user with ID: {}", id);
-        return userService.deleteUser(id)
+        return userUseCase.deleteUser(id)
                 .then(Mono.just("deleted"))
                 .doOnNext(result -> log.info("User deleted successfully"))
                 .flatMap(result -> {
@@ -157,7 +157,7 @@ public class HandlerV1 {
         String email = serverRequest.queryParam("email").orElse("");
         
         log.info("Searching user by email: {}", email);
-        return userService.getUserByEmail(email)
+        return userUseCase.getUserByEmail(email)
                 .map(requestMapper::toResponse)
                 .doOnNext(user -> log.info("User retrieved successfully by email: {}", user.email()))
                 .flatMap(userResponse -> {

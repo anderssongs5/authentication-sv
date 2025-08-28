@@ -32,7 +32,7 @@ class UserUseCaseTest {
     @Mock
     private UserRepository userRepository;
 
-    private IUserService userUseCase;
+    private UserUseCase userUseCase;
 
     private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174000";
     private static final String USER_NAME = "Steven";
@@ -264,7 +264,7 @@ class UserUseCaseTest {
         StepVerifier.create(result)
                 .expectErrorMatches(throwable ->
                         throwable instanceof IllegalArgumentException &&
-                        throwable.getMessage().equals("User ID cannot be null"))
+                        throwable.getMessage().equals("User ID cannot be null or empty"))
                 .verify();
 
         verify(userRepository, never()).findById(any());

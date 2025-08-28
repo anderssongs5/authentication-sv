@@ -2,7 +2,7 @@ package co.com.powerup.ags.authentication.api.config;
 
 import co.com.powerup.ags.authentication.api.HandlerV1;
 import co.com.powerup.ags.authentication.api.RouterRest;
-import co.com.powerup.ags.authentication.usecase.user.IUserService;
+import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,11 +26,11 @@ class ConfigTest {
     private WebTestClient webTestClient;
     
     @MockitoBean
-    private IUserService userService;
+    private UserUseCase userUseCase;
 
     @Test
     void corsConfigurationShouldAllowOrigins() {
-        Mockito.when(userService.getAllUsers()).thenReturn(Flux.just(new UserResponse("", "",
+        Mockito.when(userUseCase.getAllUsers()).thenReturn(Flux.just(new UserResponse("", "",
                 "", "", "", LocalDate.now(), "", BigDecimal.ONE)));
         
         webTestClient.get()

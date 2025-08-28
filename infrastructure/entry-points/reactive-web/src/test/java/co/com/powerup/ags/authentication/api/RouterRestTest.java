@@ -3,7 +3,7 @@ package co.com.powerup.ags.authentication.api;
 import co.com.powerup.ags.authentication.api.constants.HandlerMessages;
 import co.com.powerup.ags.authentication.api.dto.CreateUserRequest;
 import co.com.powerup.ags.authentication.api.helper.GlobalErrorAttributes;
-import co.com.powerup.ags.authentication.usecase.user.IUserService;
+import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,11 +53,12 @@ class RouterRestTest {
     public static final String USER_EMAIL_2 = "monica.gil@gmail.com";
     public static final String USERS_PATH = "/api/v1/users";
     public static final String USER_BASE_SALARY_1 = "50000.00";
+
     @Autowired
     private WebTestClient webTestClient;
     
     @MockitoBean
-    private IUserService userService;
+    private UserUseCase userUseCase;
     
     UserResponse mockUser1;
     UserResponse mockUser2;
@@ -89,7 +90,7 @@ class RouterRestTest {
 
     @Test
     void testGETAllUsers() {
-        when(userService.getAllUsers()).thenReturn(Flux.just(mockUser1, mockUser2));
+        when(userUseCase.getAllUsers()).thenReturn(Flux.just(mockUser1, mockUser2));
 
         webTestClient.get()
                 .uri(USERS_PATH)
@@ -118,7 +119,7 @@ class RouterRestTest {
         CreateUserCommand createUserRequest = new CreateUserCommand(USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
                 USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1));
         
-        when(userService.createUser(createUserRequest)).thenReturn(Mono.just(mockUser1));
+        when(userUseCase.createUser(createUserRequest)).thenReturn(Mono.just(mockUser1));
         
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -138,7 +139,7 @@ class RouterRestTest {
     
     @Test
     void testGETUserById() {
-        when(userService.getUserById(USER_ID_1)).thenReturn(Mono.just(mockUser1));
+        when(userUseCase.getUserById(USER_ID_1)).thenReturn(Mono.just(mockUser1));
         
         String uri = String.format("%s/%s", USERS_PATH, USER_ID_1);
         webTestClient.get()
@@ -159,7 +160,7 @@ class RouterRestTest {
     
     @Test
     void testDELETEUserById() {
-        when(userService.deleteUser(USER_ID_1)).thenReturn(Mono.empty());
+        when(userUseCase.deleteUser(USER_ID_1)).thenReturn(Mono.empty());
         
         String uri = String.format("%s/%s", USERS_PATH, USER_ID_1);
         webTestClient.delete()
@@ -176,7 +177,7 @@ class RouterRestTest {
     
     @Test
     void testGETUserByEmail() {
-        when(userService.getUserByEmail(USER_EMAIL_1)).thenReturn(Mono.just(mockUser1));
+        when(userUseCase.getUserByEmail(USER_EMAIL_1)).thenReturn(Mono.just(mockUser1));
         
         String uri = String.format("%s/search?email=%s", USERS_PATH, USER_EMAIL_1);
         webTestClient.get()
