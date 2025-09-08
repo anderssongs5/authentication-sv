@@ -1,5 +1,6 @@
 package co.com.powerup.ags.authentication.config;
 
+import co.com.powerup.ags.authentication.model.role.gateways.RoleRepository;
 import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,11 @@ public class UseCasesConfigTest {
         @Bean
         public PasswordEncoder passwordEncoder() {
             return mock(PasswordEncoder.class);
+        }
+        
+        @Bean
+        public RoleRepository roleRepository() {
+            return mock(RoleRepository.class);
         }
 
         @Bean
