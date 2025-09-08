@@ -1,14 +1,39 @@
-##Spring Configuration
 server:
   port: 8080
 spring:
   application:
-    name: authentication-sv
+    name: "authentication-sv"
   devtools:
     add-properties: false
   h2:
     console:
       enabled: true
-      path: /h2
+      path: "/h2"
   profiles:
-    include:
+    include: null
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+cors:
+  allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+logging:
+  level:
+    co.com.powerup.ags.authentication: DEBUG
+    org.springframework.web: DEBUG
+    reactor.netty: INFO
+
+adapters:
+  r2dbc:
+    host: "localhost"
+    port: 3306
+    database: "authenticacion_db"
+    schema: "public"
+    username: "authuser"
+    password: "authpassword"
