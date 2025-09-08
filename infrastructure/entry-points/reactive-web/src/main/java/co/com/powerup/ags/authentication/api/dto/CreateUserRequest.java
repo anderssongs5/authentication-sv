@@ -59,4 +59,8 @@ public class CreateUserRequest {
              message = "Password must contain at least one uppercase letter, one lowercase letter, and one digit")
     private String password;
     
+    @Schema(description = "User's role id", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Min(value = 0, message = "Role ID must be greater than 0")
+    private Integer roleId;
+    
 }

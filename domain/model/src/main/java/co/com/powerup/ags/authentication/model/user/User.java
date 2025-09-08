@@ -9,10 +9,11 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public record User(String id, String name, String lastName, String address, PhoneNumber phoneNumber,
-                   LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber, Password password) {
+                   LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber, Password password,
+                   Integer roleId) {
     
     public User(String id, String name, String lastName, String address, PhoneNumber phoneNumber, LocalDate birthDate,
-                Email email, BigDecimal baseSalary, String idNumber, Password password) {
+                Email email, BigDecimal baseSalary, String idNumber, Password password, Integer roleId) {
         this.id = id;
         this.name = validateName(name);
         this.lastName = validateLastName(lastName);
@@ -23,6 +24,7 @@ public record User(String id, String name, String lastName, String address, Phon
         this.baseSalary = validateBaseSalary(baseSalary);
         this.idNumber = validateIdNumber(idNumber);
         this.password = Objects.requireNonNull(password, "Password cannot be null");
+        this.roleId = validateRoleId(roleId);
     }
     
     private String validateName(String name) {
@@ -67,6 +69,13 @@ public record User(String id, String name, String lastName, String address, Phon
             throw new IllegalArgumentException("ID number cannot be null or empty");
         }
         return idNumber.trim();
+    }
+    
+    private Integer validateRoleId(Integer roleId) {
+        if (roleId == null || roleId <= 0) {
+            throw new IllegalArgumentException("Role ID cannot be null or less or equal 0");
+        }
+        return roleId;
     }
     
     @Override

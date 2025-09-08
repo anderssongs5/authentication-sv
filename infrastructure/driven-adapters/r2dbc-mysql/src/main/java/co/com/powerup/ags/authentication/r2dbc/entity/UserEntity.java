@@ -54,6 +54,9 @@ public class UserEntity implements Persistable<String> {
     @Column("password")
     private String password;
     
+    @Column("role_id")
+    private Integer roleId;
+    
     @Transient
     @Builder.Default
     private boolean isNew = true;

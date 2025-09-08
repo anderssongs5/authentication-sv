@@ -36,6 +36,7 @@ class UserReactiveRepositoryAdapterTest {
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "123456789";
     private static final String USER_HASHED_PASSWORD = "hashedPassword123";
+    private static final Integer USER_ROLE_ID = 1;
 
     @InjectMocks
     UserReactiveRepositoryAdapter repositoryAdapter;
@@ -64,7 +65,8 @@ class UserReactiveRepositoryAdapterTest {
                 new Email(USER_EMAIL),
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                Password.fromStoredData(USER_HASHED_PASSWORD)
+                Password.fromStoredData(USER_HASHED_PASSWORD),
+                USER_ROLE_ID
         );
         
         validUserEntity = UserEntity.builder()
@@ -78,6 +80,7 @@ class UserReactiveRepositoryAdapterTest {
                 .baseSalary(USER_BASE_SALARY)
                 .idNumber(USER_ID_NUMBER)
                 .password(USER_HASHED_PASSWORD)
+                .roleId(USER_ROLE_ID)
                 .build();
     }
 

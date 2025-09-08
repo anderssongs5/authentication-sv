@@ -25,6 +25,7 @@ class UserEntityMapperTest {
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "12345679";
     private static final String USER_HASHED_PASSWORD = "hashedPassword123";
+    private static final Integer USER_ROLE_ID = 1;
 
     private final UserEntityMapper mapper = UserEntityMapper.INSTANCE;
     
@@ -43,7 +44,8 @@ class UserEntityMapperTest {
                 new Email(USER_EMAIL),
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                Password.fromStoredData(USER_HASHED_PASSWORD)
+                Password.fromStoredData(USER_HASHED_PASSWORD),
+                USER_ROLE_ID
         );
 
         validUserEntity = UserEntity.builder()
@@ -58,6 +60,7 @@ class UserEntityMapperTest {
                 .idNumber(USER_ID_NUMBER)
                 .password(USER_HASHED_PASSWORD)
                 .isNew(true)
+                .roleId(USER_ROLE_ID)
                 .build();
     }
 
@@ -75,6 +78,7 @@ class UserEntityMapperTest {
         assertThat(result.getEmail()).isEqualTo(validUser.email().value());
         assertThat(result.getBaseSalary()).isEqualTo(validUser.baseSalary());
         assertThat(result.getPassword()).isEqualTo(validUser.password().hashedPassword());
+        assertThat(result.getRoleId()).isEqualTo(validUser.roleId());
         assertThat(result.isNew()).isTrue();
     }
 
@@ -92,6 +96,7 @@ class UserEntityMapperTest {
         assertThat(result.getEmail()).isEqualTo(validUser.email().value());
         assertThat(result.getBaseSalary()).isEqualTo(validUser.baseSalary());
         assertThat(result.getPassword()).isEqualTo(validUser.password().hashedPassword());
+        assertThat(result.getRoleId()).isEqualTo(validUser.roleId());
         assertThat(result.isNew()).isFalse(); // Key difference: existing entity
     }
 
@@ -112,6 +117,7 @@ class UserEntityMapperTest {
         assertThat(result.baseSalary()).isEqualTo(validUserEntity.getBaseSalary());
         assertThat(result.password()).isNotNull();
         assertThat(result.password().hashedPassword()).isEqualTo(validUserEntity.getPassword());
+        assertThat(result.roleId()).isEqualTo(validUserEntity.getRoleId());
     }
 
     @Test
@@ -161,6 +167,7 @@ class UserEntityMapperTest {
                 .baseSalary(USER_BASE_SALARY)
                 .idNumber(USER_ID_NUMBER)
                 .password(USER_HASHED_PASSWORD)
+                .roleId(USER_ROLE_ID)
                 .build();
 
         User result = mapper.toDomain(entityWithNulls);
@@ -172,6 +179,7 @@ class UserEntityMapperTest {
         assertThat(result.email().value()).isEqualTo(USER_EMAIL);
         assertThat(result.password()).isNotNull();
         assertThat(result.password().hashedPassword()).isEqualTo(USER_HASHED_PASSWORD);
+        assertThat(result.roleId()).isEqualTo(USER_ROLE_ID);
     }
 
     @Test
@@ -212,6 +220,7 @@ class UserEntityMapperTest {
                 .baseSalary(USER_BASE_SALARY)
                 .idNumber(USER_ID_NUMBER)
                 .password(USER_HASHED_PASSWORD)
+                .roleId(USER_ROLE_ID)
                 .build();
 
         User result = mapper.toDomain(entityWithPassword);

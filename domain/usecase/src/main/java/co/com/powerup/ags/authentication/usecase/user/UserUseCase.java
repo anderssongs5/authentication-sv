@@ -1,7 +1,9 @@
 package co.com.powerup.ags.authentication.usecase.user;
 
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
+import co.com.powerup.ags.authentication.model.role.gateways.RoleRepository;
 import co.com.powerup.ags.authentication.model.user.User;
 import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
@@ -19,14 +21,17 @@ public class UserUseCase {
     public static final String USER_NOT_FOUND_ID = "User not found with ID: ";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
     
-    public UserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     public Mono<UserResponse> createUser(CreateUserCommand command) {
-        return userRepository.existsByEmailOrIdNumber(command.email(), command.idNumber())
+        return validateRoleExists(command.roleId())
+                .then(userRepository.existsByEmailOrIdNumber(command.email(), command.idNumber()))
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
                         return Mono.error(
@@ -46,7 +51,8 @@ public class UserUseCase {
                                     user.email(),
                                     user.baseSalary(),
                                     user.idNumber(),
-                                    user.password()
+                                    user.password(),
+                                    user.roleId()
                             ));
                 })
                 .flatMap(userRepository::save)
@@ -112,5 +118,15 @@ public class UserUseCase {
                     return userRepository.findByEmail(email)
                             .map(UserMapper::userToResponse);
                 });
+    }
+    
+    private Mono<Void> validateRoleExists(Integer roleId) {
+        if (roleId == null) {
+            return Mono.error(new IllegalArgumentException("Role ID cannot be null"));
+        }
+        
+        return roleRepository.getRoleById(roleId)
+                .switchIfEmpty(Mono.error(new RoleNotFoundException("Role with ID " + roleId + " does not exist")))
+                .then();
     }
 }

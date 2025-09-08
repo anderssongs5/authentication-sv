@@ -31,7 +31,10 @@ public record UserResponse(
         BigDecimal baseSalary,
         
         @Schema(description = "User's id number", example = "12345615")
-        String idNumber
+        String idNumber,
+        
+        @Schema(description = "User's role id", example = "1")
+        Integer roleId
 ) {
     
 }

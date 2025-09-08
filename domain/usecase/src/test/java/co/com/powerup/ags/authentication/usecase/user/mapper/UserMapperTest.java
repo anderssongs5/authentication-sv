@@ -37,6 +37,7 @@ class UserMapperTest {
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "123456789";
     private static final String USER_PASSWORD = "ValidPass123";
+    private static final Integer USER_ROLE_ID = 1;
 
     private CreateUserCommand createUserCommand;
     private UpdateUserCommand updateUserCommand;
@@ -57,7 +58,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         updateUserCommand = new UpdateUserCommand(
@@ -82,7 +84,8 @@ class UserMapperTest {
                 new Email(USER_EMAIL),
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                Password.fromPlainText(USER_PASSWORD, passwordEncoder)
+                Password.fromPlainText(USER_PASSWORD, passwordEncoder),
+                USER_ROLE_ID
         );
     }
 
@@ -260,7 +263,8 @@ class UserMapperTest {
                 "invalid-email",
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidEmailCommand, passwordEncoder);
@@ -284,7 +288,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                "weak" // Invalid password
+                "weak",
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidPasswordCommand, passwordEncoder);
@@ -308,7 +313,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(invalidPhoneCommand, passwordEncoder);
@@ -332,7 +338,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(nullNameCommand, passwordEncoder);
@@ -356,7 +363,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(underAgeCommand, passwordEncoder);
@@ -380,7 +388,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 new BigDecimal("-1000.00"),
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(negativeSalaryCommand, passwordEncoder);
@@ -404,7 +413,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 null,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(nullIdNumberCommand, passwordEncoder);
@@ -428,7 +438,8 @@ class UserMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                null
+                null,
+                USER_ROLE_ID
         );
 
         Mono<User> result = UserMapper.commandToUser(nullPasswordCommand, passwordEncoder);

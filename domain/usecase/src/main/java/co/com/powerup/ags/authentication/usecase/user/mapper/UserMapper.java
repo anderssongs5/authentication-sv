@@ -28,7 +28,8 @@ public class UserMapper {
                 new Email(command.email()),
                 command.baseSalary(),
                 command.idNumber(),
-                Password.fromPlainText(command.password(), passwordEncoder)
+                Password.fromPlainText(command.password(), passwordEncoder),
+                command.roleId()
         ))
         .onErrorMap(IllegalArgumentException.class, 
             ex -> new IllegalArgumentException("User validation failed: " + ex.getMessage()));
@@ -45,7 +46,8 @@ public class UserMapper {
                 new Email(command.email()),
                 command.baseSalary(),
                 command.idNumber(),
-                existingUser.password()
+                existingUser.password(),
+                existingUser.roleId()
         ))
         .onErrorMap(IllegalArgumentException.class,
             ex -> new IllegalArgumentException("User validation failed: " + ex.getMessage()));
@@ -61,7 +63,8 @@ public class UserMapper {
                 user.birthDate(),
                 user.email().value(),
                 user.baseSalary(),
-                user.idNumber()
+                user.idNumber(),
+                user.roleId()
         );
     }
 }
