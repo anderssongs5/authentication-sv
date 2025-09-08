@@ -2,15 +2,16 @@ package co.com.powerup.ags.authentication.securitycrypto;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class PasswordEncoderAdapterTest {
     
     @Mock
@@ -20,7 +21,6 @@ class PasswordEncoderAdapterTest {
     
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         passwordEncoderAdapter = new PasswordEncoderAdapter(springPasswordEncoder);
     }
     
