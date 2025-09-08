@@ -1,6 +1,7 @@
 package co.com.powerup.ags.authentication.model.user;
 
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Password;
 import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
 
 import java.math.BigDecimal;
@@ -8,10 +9,10 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public record User(String id, String name, String lastName, String address, PhoneNumber phoneNumber,
-                   LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber) {
+                   LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber, Password password) {
     
-    public User(String id, String name, String lastName, String address,
-                PhoneNumber phoneNumber, LocalDate birthDate, Email email, BigDecimal baseSalary, String idNumber) {
+    public User(String id, String name, String lastName, String address, PhoneNumber phoneNumber, LocalDate birthDate,
+                Email email, BigDecimal baseSalary, String idNumber, Password password) {
         this.id = id;
         this.name = validateName(name);
         this.lastName = validateLastName(lastName);
@@ -21,6 +22,7 @@ public record User(String id, String name, String lastName, String address, Phon
         this.email = Objects.requireNonNull(email, "Email cannot be null");
         this.baseSalary = validateBaseSalary(baseSalary);
         this.idNumber = validateIdNumber(idNumber);
+        this.password = Objects.requireNonNull(password, "Password cannot be null");
     }
     
     private String validateName(String name) {

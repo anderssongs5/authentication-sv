@@ -3,6 +3,7 @@ package co.com.powerup.ags.authentication.usecase.user;
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import co.com.powerup.ags.authentication.model.user.User;
+import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
@@ -17,9 +18,11 @@ public class UserUseCase {
     
     public static final String USER_NOT_FOUND_ID = "User not found with ID: ";
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     
-    public UserUseCase(UserRepository userRepository) {
+    public UserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Mono<UserResponse> createUser(CreateUserCommand command) {
@@ -32,7 +35,7 @@ public class UserUseCase {
                                                 command.email(), command.idNumber()))
                         );
                     }
-                    return UserMapper.commandToUser(command)
+                    return UserMapper.commandToUser(command, passwordEncoder)
                             .map(user -> new User(
                                     UUID.randomUUID().toString(),
                                     user.name(),
@@ -42,7 +45,8 @@ public class UserUseCase {
                                     user.birthDate(),
                                     user.email(),
                                     user.baseSalary(),
-                                    command.idNumber()
+                                    user.idNumber(),
+                                    user.password()
                             ));
                 })
                 .flatMap(userRepository::save)
@@ -52,7 +56,7 @@ public class UserUseCase {
     public Mono<UserResponse> updateUser(UpdateUserCommand command) {
         return userRepository.findById(command.id())
                 .switchIfEmpty(Mono.error(new UserNotFoundException(USER_NOT_FOUND_ID + command.id())))
-                .flatMap(existingUser -> UserMapper.commandToUser(command))
+                .flatMap(existingUser -> UserMapper.commandToUser(command, existingUser))
                 .flatMap(userRepository::save)
                 .map(UserMapper::userToResponse);
     }
@@ -88,5 +92,25 @@ public class UserUseCase {
                 .flatMap(userRepository::findByIdNumber)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id number: " + idNumber)))
                 .map(UserMapper::userToResponse);
+    }
+    
+    public Mono<Boolean> verifyPassword(String email, String plainTextPassword) {
+        return Mono.justOrEmpty(email)
+                .filter(e -> e != null && !e.trim().isEmpty())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
+                .flatMap(userRepository::findByEmail)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with email: " + email)))
+                .map(user -> user.password().matches(plainTextPassword, passwordEncoder));
+    }
+    
+    public Mono<UserResponse> authenticateUser(String email, String plainTextPassword) {
+        return verifyPassword(email, plainTextPassword)
+                .flatMap(isValid -> {
+                    if (Boolean.FALSE.equals(isValid)) {
+                        return Mono.error(new IllegalArgumentException("Invalid credentials"));
+                    }
+                    return userRepository.findByEmail(email)
+                            .map(UserMapper::userToResponse);
+                });
     }
 }

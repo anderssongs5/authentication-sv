@@ -1,7 +1,9 @@
 package co.com.powerup.ags.authentication.usecase.user.mapper;
 
 import co.com.powerup.ags.authentication.model.user.User;
+import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Password;
 import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
@@ -15,7 +17,7 @@ public class UserMapper {
     }
     
     
-    public static Mono<User> commandToUser(CreateUserCommand command) {
+    public static Mono<User> commandToUser(CreateUserCommand command, PasswordEncoder passwordEncoder) {
         return Mono.fromCallable(() -> new User(
                 null,
                 command.name(),
@@ -25,13 +27,14 @@ public class UserMapper {
                 command.birthDate(),
                 new Email(command.email()),
                 command.baseSalary(),
-                command.idNumber()
+                command.idNumber(),
+                Password.fromPlainText(command.password(), passwordEncoder)
         ))
         .onErrorMap(IllegalArgumentException.class, 
             ex -> new IllegalArgumentException("User validation failed: " + ex.getMessage()));
     }
     
-    public static Mono<User> commandToUser(UpdateUserCommand command) {
+    public static Mono<User> commandToUser(UpdateUserCommand command, User existingUser) {
         return Mono.fromCallable(() -> new User(
                 command.id(),
                 command.name(),
@@ -41,7 +44,8 @@ public class UserMapper {
                 command.birthDate(),
                 new Email(command.email()),
                 command.baseSalary(),
-                command.idNumber()
+                command.idNumber(),
+                existingUser.password()
         ))
         .onErrorMap(IllegalArgumentException.class,
             ex -> new IllegalArgumentException("User validation failed: " + ex.getMessage()));

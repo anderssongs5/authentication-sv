@@ -14,6 +14,7 @@ CREATE TABLE users (
     birth_date DATE NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     base_salary DECIMAL(10,2) NOT NULL CHECK (base_salary >= 0 AND base_salary <= 15000000.00),
+    password VARCHAR(200) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
