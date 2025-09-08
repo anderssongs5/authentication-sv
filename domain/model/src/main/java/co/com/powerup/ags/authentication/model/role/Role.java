@@ -13,7 +13,7 @@ import lombok.Setter;
 @Builder(toBuilder = true)
 public class Role {
     
-    private Long id;
+    private Integer id;
     private String name;
     private String description;
 }

@@ -68,7 +68,8 @@ public class RouterRest {
                                                                             "phoneNumber": "1234567890",
                                                                             "birthDate": "1990-10-01",
                                                                             "email": "steven.garcia@test.com",
-                                                                            "baseSalary": 50000.00
+                                                                            "baseSalary": 50000.00,
+                                                                            "roleId": 1
                                                                         }
                                                                     }
                                                                     """
@@ -553,7 +554,8 @@ public class RouterRest {
                                                                             "birthDate": "1990-10-01",
                                                                             "email": "steven.garcia@test.com",
                                                                             "baseSalary": 50000.00,
-                                                                            "idNumber": "123456789"
+                                                                            "idNumber": "123456789",
+                                                                            "roleId": 1
                                                                         }
                                                                     }
                                                                     """

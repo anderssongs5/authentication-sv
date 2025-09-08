@@ -1,6 +1,7 @@
 package co.com.powerup.ags.authentication.api.helper;
 
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +19,9 @@ import java.util.Objects;
 
 @Component
 public class GlobalErrorAttributes extends DefaultErrorAttributes {
-
+    
     private static final Logger log = LoggerFactory.getLogger(GlobalErrorAttributes.class);
+    public static final String BAD_REQUEST = "Bad Request";
     
     @Override
     public Map<String, Object> getErrorAttributes(ServerRequest serverRequest, ErrorAttributeOptions options) {
@@ -38,9 +40,12 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
             case UserNotFoundException userNotFoundException ->
                     setErrorAttributes(errorAttributes, HttpStatus.NOT_FOUND, "DATA_NOT_FOUND",
                             "Not Found", userNotFoundException.getMessage(), path);
+            case RoleNotFoundException roleNotFoundException ->
+                    setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "DATA_NOT_FOUND",
+                            BAD_REQUEST, roleNotFoundException.getMessage(), path);
             case IllegalArgumentException illegalArgumentException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "INVALID_INPUT",
-                            "Bad Request", error.getMessage(), path);
+                            BAD_REQUEST, error.getMessage(), path);
             case null, default -> {
                 log.error("Unexpected error", error);
                 

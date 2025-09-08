@@ -27,6 +27,7 @@ class UserRequestMapperTest {
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "561615616";
     private static final String USER_PASSWORD = "ValidPass123";
+    private static final Integer USER_ROLE_ID = 1;
 
     private final UserRequestMapper mapper = UserRequestMapper.INSTANCE;
     
@@ -45,7 +46,8 @@ class UserRequestMapperTest {
                 USER_EMAIL,
                 USER_BASE_SALARY,
                 USER_ID_NUMBER,
-                USER_PASSWORD
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         updateUserRequest = new UpdateUserRequest(
@@ -68,7 +70,8 @@ class UserRequestMapperTest {
                 USER_BIRTH_DATE,
                 USER_EMAIL,
                 USER_BASE_SALARY,
-                USER_ID_NUMBER
+                USER_ID_NUMBER,
+                USER_ROLE_ID
         );
     }
 
@@ -86,6 +89,7 @@ class UserRequestMapperTest {
         assertThat(result.baseSalary()).isEqualTo(createUserRequest.getBaseSalary());
         assertThat(result.idNumber()).isEqualTo(createUserRequest.getIdNumber());
         assertThat(result.password()).isEqualTo(createUserRequest.getPassword());
+        assertThat(result.roleId()).isEqualTo(createUserRequest.getRoleId());
     }
 
     @Test
@@ -128,6 +132,7 @@ class UserRequestMapperTest {
         assertThat(result.email()).isEqualTo(domainUserResponse.email());
         assertThat(result.baseSalary()).isEqualTo(domainUserResponse.baseSalary());
         assertThat(result.idNumber()).isEqualTo(domainUserResponse.idNumber());
+        assertThat(result.roleId()).isEqualTo(domainUserResponse.roleId());
     }
 
     @Test
@@ -142,7 +147,8 @@ class UserRequestMapperTest {
                         LocalDate.of(1985, 5, 20),
                         "andersson.garcia@example.com",
                         new BigDecimal("60000.00"),
-                        "1245679"
+                        "1245679",
+                        USER_ROLE_ID
                 );
 
         List<co.com.powerup.ags.authentication.usecase.user.dto.UserResponse> domainList = 
@@ -183,6 +189,7 @@ class UserRequestMapperTest {
         assertThat(result.email()).isNull();
         assertThat(result.baseSalary()).isNull();
         assertThat(result.idNumber()).isNull();
+        assertThat(result.roleId()).isNull();
     }
 
     @Test
@@ -248,7 +255,8 @@ class UserRequestMapperTest {
                         command.birthDate(),
                         command.email(),
                         command.baseSalary(),
-                        command.idNumber()
+                        command.idNumber(),
+                        command.roleId()
                 );
         
         UserResponse finalResponse = mapper.toResponse(simulatedDomainResponse);
@@ -261,6 +269,7 @@ class UserRequestMapperTest {
         assertThat(finalResponse.email()).isEqualTo(createUserRequest.getEmail());
         assertThat(finalResponse.baseSalary()).isEqualTo(createUserRequest.getBaseSalary());
         assertThat(finalResponse.idNumber()).isEqualTo(createUserRequest.getIdNumber());
+        assertThat(finalResponse.roleId()).isEqualTo(createUserRequest.getRoleId());
     }
 
     @Test

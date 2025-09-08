@@ -5,6 +5,7 @@ import co.com.powerup.ags.authentication.api.dto.CreateUserRequest;
 import co.com.powerup.ags.authentication.api.dto.UpdateUserRequest;
 import co.com.powerup.ags.authentication.api.helper.GlobalErrorAttributes;
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
@@ -61,6 +62,8 @@ class RouterRestTest {
     private static final String USER_ID_NUMBER_1 = "4586311";
     private static final String USER_ID_NUMBER_2 = "9852112144";
     private static final String USER_PASSWORD = "ValidPass123";
+    private static final Integer USER_ROLE_ID_1 = 1;
+    private static final Integer USER_ROLE_ID_2 = 2;
 
     @Autowired
     private WebTestClient webTestClient;
@@ -74,15 +77,16 @@ class RouterRestTest {
     @BeforeEach
     void setUp() {
          mockUser1 = new UserResponse(
-                USER_ID_1,
-                USER_NAME_1,
-                USER_LAST_NAME_1,
-                USER_ADDRESS_1,
-                USER_PHONE_NUMBER_1,
-                LocalDate.of(1990, 1, 15),
-                USER_EMAIL_1,
-                new BigDecimal(USER_BASE_SALARY_1),
-                 USER_ID_NUMBER_1
+                 USER_ID_1,
+                 USER_NAME_1,
+                 USER_LAST_NAME_1,
+                 USER_ADDRESS_1,
+                 USER_PHONE_NUMBER_1,
+                 LocalDate.of(1990, 1, 15),
+                 USER_EMAIL_1,
+                 new BigDecimal(USER_BASE_SALARY_1),
+                 USER_ID_NUMBER_1,
+                 USER_ROLE_ID_1
         );
         
         mockUser2 = new UserResponse(
@@ -94,7 +98,8 @@ class RouterRestTest {
                 LocalDate.of(1985, 5, 20),
                 USER_EMAIL_2,
                 new BigDecimal("60000.00"),
-                USER_ID_NUMBER_2
+                USER_ID_NUMBER_2,
+                USER_ROLE_ID_2
         );
     }
 
@@ -118,10 +123,12 @@ class RouterRestTest {
                 .jsonPath("$.data[0].name").isEqualTo(USER_NAME_1)
                 .jsonPath("$.data[0].lastName").isEqualTo(USER_LAST_NAME_1)
                 .jsonPath("$.data[0].email").isEqualTo(USER_EMAIL_1)
+                .jsonPath("$.data[0].roleId").isEqualTo(USER_ROLE_ID_1)
                 .jsonPath("$.data[1].id").isEqualTo(USER_ID_2)
                 .jsonPath("$.data[1].name").isEqualTo(USER_NAME_2)
                 .jsonPath("$.data[1].lastName").isEqualTo(USER_LAST_NAME_2)
-                .jsonPath("$.data[1].email").isEqualTo(USER_EMAIL_2);
+                .jsonPath("$.data[1].email").isEqualTo(USER_EMAIL_2)
+                .jsonPath("$.data[1].roleId").isEqualTo(USER_ROLE_ID_2);
     }
 
     @Test
@@ -147,7 +154,7 @@ class RouterRestTest {
                 USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
                 USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), 
                 USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1), 
-                USER_ID_NUMBER_1, USER_PASSWORD
+                USER_ID_NUMBER_1, USER_PASSWORD, USER_ROLE_ID_1
         );
         
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class))).thenReturn(Mono.just(mockUser1));
@@ -165,22 +172,14 @@ class RouterRestTest {
                 .jsonPath("$.data.id").isEqualTo(USER_ID_1)
                 .jsonPath("$.data.name").isEqualTo(USER_NAME_1)
                 .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_1)
-                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1);
+                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1)
+                .jsonPath("$.data.roleId").isEqualTo(USER_ROLE_ID_1);
     }
 
     @Test
     void testPOSTCreateUserWithDatabaseConnectionError() {
-        CreateUserRequest createUserRequest = new CreateUserRequest();
-        createUserRequest.setName(USER_NAME_1);
-        createUserRequest.setLastName(USER_LAST_NAME_1);
-        createUserRequest.setAddress(USER_ADDRESS_1);
-        createUserRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
-        createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
-        createUserRequest.setEmail(USER_EMAIL_1);
-        createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
-        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
-        createUserRequest.setPassword(USER_PASSWORD);
-
+        CreateUserRequest createUserRequest = getCreateUserRequest();
+        
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAccessResourceFailureException("Unable to connect to database")));
 
@@ -199,17 +198,8 @@ class RouterRestTest {
 
     @Test
     void testPOSTCreateUserWithExistingEmail() {
-        CreateUserRequest createUserRequest = new CreateUserRequest();
-        createUserRequest.setName(USER_NAME_1);
-        createUserRequest.setLastName(USER_LAST_NAME_1);
-        createUserRequest.setAddress(USER_ADDRESS_1);
-        createUserRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
-        createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
-        createUserRequest.setEmail(USER_EMAIL_1);
-        createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
-        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
-        createUserRequest.setPassword(USER_PASSWORD);
-
+        CreateUserRequest createUserRequest = getCreateUserRequest();
+        
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAlreadyExistsException("User with email " + USER_EMAIL_1 + " already exists")));
 
@@ -228,17 +218,8 @@ class RouterRestTest {
 
     @Test
     void testPOSTCreateUserWithExistingIdNumber() {
-        CreateUserRequest createUserRequest = new CreateUserRequest();
-        createUserRequest.setName(USER_NAME_1);
-        createUserRequest.setLastName(USER_LAST_NAME_1);
-        createUserRequest.setAddress(USER_ADDRESS_1);
-        createUserRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
-        createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
-        createUserRequest.setEmail(USER_EMAIL_1);
-        createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
-        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
-        createUserRequest.setPassword(USER_PASSWORD);
-
+        CreateUserRequest createUserRequest = getCreateUserRequest();
+        
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAlreadyExistsException("User with ID number " + USER_ID_NUMBER_1 + " already exists")));
 
@@ -254,7 +235,22 @@ class RouterRestTest {
                 .jsonPath("$.path").isEqualTo(USERS_PATH)
                 .jsonPath("$.error").exists();
     }
-
+    
+    private static CreateUserRequest getCreateUserRequest() {
+        CreateUserRequest createUserRequest = new CreateUserRequest();
+        createUserRequest.setName(USER_NAME_1);
+        createUserRequest.setLastName(USER_LAST_NAME_1);
+        createUserRequest.setAddress(USER_ADDRESS_1);
+        createUserRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        createUserRequest.setEmail(USER_EMAIL_1);
+        createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
+        createUserRequest.setPassword(USER_PASSWORD);
+        createUserRequest.setRoleId(USER_ROLE_ID_1);
+        return createUserRequest;
+    }
+    
     @Test
     void testPOSTCreateUserWithBlankIdNumber() {
         CreateUserRequest invalidRequest = new CreateUserRequest();
@@ -333,7 +329,8 @@ class RouterRestTest {
                 .jsonPath("$.data.id").isEqualTo(USER_ID_1)
                 .jsonPath("$.data.name").isEqualTo(USER_NAME_1)
                 .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_1)
-                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1);
+                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1)
+                .jsonPath("$.data.roleId").isEqualTo(USER_ROLE_ID_1);
     }
 
     @Test
@@ -705,7 +702,7 @@ class RouterRestTest {
         UserResponse updatedUser = new UserResponse(
                 USER_ID_1, USER_NAME_2, USER_LAST_NAME_2, USER_ADDRESS_2,
                 USER_PHONE_NUMBER_2, LocalDate.of(1985, 5, 20), 
-                USER_EMAIL_2, new BigDecimal("60000.00"), USER_ID_NUMBER_2
+                USER_EMAIL_2, new BigDecimal("60000.00"), USER_ID_NUMBER_2, USER_ROLE_ID_1
         );
 
         when(userUseCase.updateUser(org.mockito.ArgumentMatchers.any(UpdateUserCommand.class)))
@@ -727,7 +724,8 @@ class RouterRestTest {
                 .jsonPath("$.data.name").isEqualTo(USER_NAME_2)
                 .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_2)
                 .jsonPath("$.data.email").isEqualTo(USER_EMAIL_2)
-                .jsonPath("$.data.baseSalary").isEqualTo(60000.00);
+                .jsonPath("$.data.baseSalary").isEqualTo(60000.00)
+                .jsonPath("$.data.roleId").isEqualTo(USER_ROLE_ID_1);
     }
 
     @Test
@@ -956,7 +954,8 @@ class RouterRestTest {
                 .jsonPath("$.data.name").isEqualTo(USER_NAME_1)
                 .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_1)
                 .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1)
-                .jsonPath("$.data.idNumber").isEqualTo(USER_ID_NUMBER_1);
+                .jsonPath("$.data.idNumber").isEqualTo(USER_ID_NUMBER_1)
+                .jsonPath("$.data.roleId").isEqualTo(USER_ROLE_ID_1);
     }
 
     @Test
@@ -1045,6 +1044,7 @@ class RouterRestTest {
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
         invalidRequest.setPassword("");
+        invalidRequest.setRoleId(USER_ROLE_ID_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1066,6 +1066,7 @@ class RouterRestTest {
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
         invalidRequest.setPassword(null);
+        invalidRequest.setRoleId(USER_ROLE_ID_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1087,6 +1088,7 @@ class RouterRestTest {
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
         invalidRequest.setPassword("1234567");
+        invalidRequest.setRoleId(USER_ROLE_ID_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1108,6 +1110,7 @@ class RouterRestTest {
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
         invalidRequest.setPassword("password123");
+        invalidRequest.setRoleId(USER_ROLE_ID_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1129,6 +1132,7 @@ class RouterRestTest {
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
         invalidRequest.setPassword("PASSWORD123");
+        invalidRequest.setRoleId(USER_ROLE_ID_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1150,6 +1154,7 @@ class RouterRestTest {
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
         invalidRequest.setPassword("PasswordTest");
+        invalidRequest.setRoleId(USER_ROLE_ID_1);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1165,7 +1170,7 @@ class RouterRestTest {
                 USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
                 USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), 
                 USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1), 
-                USER_ID_NUMBER_1, "StrongPass123"
+                USER_ID_NUMBER_1, "StrongPass123", USER_ROLE_ID_1
         );
         
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class))).thenReturn(Mono.just(mockUser1));
@@ -1180,5 +1185,54 @@ class RouterRestTest {
                 .jsonPath("$.message").isEqualTo(HandlerMessages.USER_CREATED_SUCCESS)
                 .jsonPath("$.data.id").isEqualTo(USER_ID_1)
                 .jsonPath("$.data.name").isEqualTo(USER_NAME_1);
+    }
+    
+    @Test
+    void testPOSTCreateUserWithInvalidRoleId() {
+        CreateUserRequest createUserRequest = getCreateUserRequest();
+        
+        when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
+                .thenReturn(Mono.error(new RoleNotFoundException("Role with ID " + createUserRequest.getRoleId() + " does not exist")));
+        
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(createUserRequest)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo(USERS_PATH)
+                .jsonPath("$.error").exists();
+    }
+    
+    @Test
+    void testPOSTCreateUserWithNullRoleId() {
+        CreateUserRequest createUserRequest = new CreateUserRequest();
+        createUserRequest.setName(USER_NAME_1);
+        createUserRequest.setLastName(USER_LAST_NAME_1);
+        createUserRequest.setAddress(USER_ADDRESS_1);
+        createUserRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        createUserRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        createUserRequest.setEmail(USER_EMAIL_1);
+        createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        createUserRequest.setIdNumber(USER_ID_NUMBER_1);
+        createUserRequest.setPassword(USER_PASSWORD);
+        
+        when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
+                .thenReturn(Mono.error(new RoleNotFoundException("Role ID cannot be null")));
+        
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(createUserRequest)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo(USERS_PATH)
+                .jsonPath("$.error").exists();
     }
 }
