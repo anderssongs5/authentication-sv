@@ -1,4 +1,4 @@
-package co.com.powerup.ags.authentication.securitycrypto;
+package co.com.powerup.ags.authentication.securitycrypto.password;
 
 import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import lombok.RequiredArgsConstructor;

@@ -1,5 +1,6 @@
 package co.com.powerup.ags.authentication.securitycrypto;
 
+import co.com.powerup.ags.authentication.securitycrypto.password.PasswordEncoderAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

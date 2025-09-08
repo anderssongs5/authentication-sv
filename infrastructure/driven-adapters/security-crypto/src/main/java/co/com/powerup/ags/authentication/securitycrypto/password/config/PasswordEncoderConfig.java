@@ -1,4 +1,4 @@
-package co.com.powerup.ags.authentication.securitycrypto.config;
+package co.com.powerup.ags.authentication.securitycrypto.password.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

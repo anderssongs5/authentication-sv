@@ -2,6 +2,7 @@ package co.com.powerup.ags.authentication.api.config;
 
 import co.com.powerup.ags.authentication.api.HandlerV1;
 import co.com.powerup.ags.authentication.api.RouterRest;
+import co.com.powerup.ags.authentication.usecase.login.LoginUseCase;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ class ConfigTest {
     
     @MockitoBean
     private UserUseCase userUseCase;
+    
+    @MockitoBean
+    private LoginUseCase loginUseCase;
 
     @Test
     void corsConfigurationShouldAllowOrigins() {

@@ -1,6 +1,7 @@
 package co.com.powerup.ags.authentication.api.helper;
 
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.InvalidCredentialsException;
 import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import org.slf4j.Logger;
@@ -43,6 +44,9 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
             case RoleNotFoundException roleNotFoundException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "DATA_NOT_FOUND",
                             BAD_REQUEST, roleNotFoundException.getMessage(), path);
+            case InvalidCredentialsException invalidCredentialsException ->
+                    setErrorAttributes(errorAttributes, HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS",
+                            "Unauthorized", invalidCredentialsException.getMessage(), path);
             case IllegalArgumentException illegalArgumentException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "INVALID_INPUT",
                             BAD_REQUEST, error.getMessage(), path);

@@ -2,10 +2,14 @@ package co.com.powerup.ags.authentication.api;
 
 import co.com.powerup.ags.authentication.api.constants.HandlerMessages;
 import co.com.powerup.ags.authentication.api.dto.CreateUserRequest;
+import co.com.powerup.ags.authentication.api.dto.LoginRequest;
 import co.com.powerup.ags.authentication.api.dto.SuccessResponse;
 import co.com.powerup.ags.authentication.api.dto.UpdateUserRequest;
 import co.com.powerup.ags.authentication.api.dto.UserResponse;
+import co.com.powerup.ags.authentication.api.mapper.AuthRequestMapper;
 import co.com.powerup.ags.authentication.api.mapper.UserRequestMapper;
+import co.com.powerup.ags.authentication.model.auth.TokenDTO;
+import co.com.powerup.ags.authentication.usecase.login.LoginUseCase;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +32,17 @@ public class HandlerV1 {
     private static final Logger log = LoggerFactory.getLogger(HandlerV1.class);
     
     private final UserRequestMapper requestMapper;
+    private final AuthRequestMapper authRequestMapper;
     private final UserUseCase userUseCase;
+    private final LoginUseCase loginUseCase;
     private final Validator validator;
     
-    public HandlerV1(UserUseCase userUseCase, Validator validator) {
+    public HandlerV1(UserUseCase userUseCase, LoginUseCase loginUseCase, Validator validator) {
         this.requestMapper = UserRequestMapper.INSTANCE;
+        this.authRequestMapper = AuthRequestMapper.INSTANCE;
         this.validator = validator;
         this.userUseCase = userUseCase;
+        this.loginUseCase = loginUseCase;
     }
     
     private <T> Mono<T> validateRequest(T request) {
@@ -166,6 +174,31 @@ public class HandlerV1 {
                             .path(serverRequest.path() + (serverRequest.uri().getQuery() != null ? "?" + serverRequest.uri().getQuery() : ""))
                             .data(userResponse)
                             .message(HandlerMessages.USER_RETRIEVED_SUCCESS)
+                            .build();
+                    
+                    return ServerResponse.ok().bodyValue(successResponse);
+                });
+    }
+    
+    public Mono<ServerResponse> authenticate(ServerRequest serverRequest) {
+        return serverRequest.formData()
+                .map(formData -> {
+                    LoginRequest loginRequest = new LoginRequest();
+                    loginRequest.setEmail(formData.getFirst("email"));
+                    loginRequest.setPassword(formData.getFirst("password"));
+                    return loginRequest;
+                })
+                .flatMap(this::validateRequest)
+                .map(authRequestMapper::toRequest)
+                .doOnNext(request -> log.info("Authentication attempt for email: {}", request.email().value()))
+                .flatMap(loginUseCase::authenticateUser)
+                .doOnNext(response -> log.info("Authentication successful"))
+                .flatMap(tokenDTOResponse -> {
+                    SuccessResponse<TokenDTO> successResponse = SuccessResponse.<TokenDTO>builder()
+                            .timestamp(LocalDateTime.now())
+                            .path(serverRequest.path())
+                            .data(tokenDTOResponse)
+                            .message("Authentication successful")
                             .build();
                     
                     return ServerResponse.ok().bodyValue(successResponse);

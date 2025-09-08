@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import co.com.powerup.ags.authentication.api.dto.CreateUserRequest;
+import co.com.powerup.ags.authentication.api.dto.LoginRequest;
 import co.com.powerup.ags.authentication.api.dto.UpdateUserRequest;
 
 @Configuration
@@ -608,6 +609,118 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/login",
+                    method = RequestMethod.POST,
+                    beanClass = HandlerV1.class,
+                    beanMethod = "authenticate",
+                    operation = @Operation(
+                            operationId = "authenticate",
+                            summary = "Authenticate user",
+                            description = "Authenticates a user with email and password, returns JWT token",
+                            tags = {"Authentication"},
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    description = "User login credentials as form data",
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/x-www-form-urlencoded",
+                                            schema = @Schema(implementation = LoginRequest.class)
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Authentication successful",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = SuccessResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Success Response",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "data": {
+                                                                            "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlTmFtZSI6IkFETUlOIiwiYXVkIjoiYXV0aGVudGljYXRpb24tc2VydmljZSIsImlhdCI6MTYzMDUwMDAwMCwiZXhwIjoxNjMwNTg2NDAwfQ.signature",
+                                                                            "tokenType": "Bearer",
+                                                                            "expiresIn": 86400
+                                                                        },
+                                                                        "message": "Authentication successful"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Invalid input data",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Validation Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "status": 400,
+                                                                        "error": "Bad Request",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "INVALID_INPUT",
+                                                                        "message": "Email is required"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Invalid credentials",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Authentication Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "status": 401,
+                                                                        "error": "Unauthorized",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "INVALID_CREDENTIALS",
+                                                                        "message": "Invalid email or password"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Internal server error",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Internal Server Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "status": 500,
+                                                                        "error": "Internal Server Error",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "UNEXPECTED_ERROR",
+                                                                        "message": "An unexpected error occurred"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(HandlerV1 handlerV1) {
@@ -621,6 +734,9 @@ public class RouterRest {
                                 .GET(ID_PATH_PARAM, handlerV1::getUserById)
                                 .PUT(ID_PATH_PARAM, handlerV1::updateUser)
                                 .DELETE(ID_PATH_PARAM, handlerV1::deleteUser))
+                .path("/api/v1/login",
+                        builder -> builder
+                                .POST("", handlerV1::authenticate))
                 .build();
     }
 }

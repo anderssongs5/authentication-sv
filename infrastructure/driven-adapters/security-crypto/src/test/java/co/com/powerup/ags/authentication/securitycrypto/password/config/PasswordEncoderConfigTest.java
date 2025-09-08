@@ -1,4 +1,4 @@
-package co.com.powerup.ags.authentication.securitycrypto.config;
+package co.com.powerup.ags.authentication.securitycrypto.password.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

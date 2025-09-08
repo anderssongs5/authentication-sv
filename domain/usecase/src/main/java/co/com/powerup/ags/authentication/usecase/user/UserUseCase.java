@@ -100,26 +100,6 @@ public class UserUseCase {
                 .map(UserMapper::userToResponse);
     }
     
-    public Mono<Boolean> verifyPassword(String email, String plainTextPassword) {
-        return Mono.justOrEmpty(email)
-                .filter(e -> e != null && !e.trim().isEmpty())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
-                .flatMap(userRepository::findByEmail)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with email: " + email)))
-                .map(user -> user.password().matches(plainTextPassword, passwordEncoder));
-    }
-    
-    public Mono<UserResponse> authenticateUser(String email, String plainTextPassword) {
-        return verifyPassword(email, plainTextPassword)
-                .flatMap(isValid -> {
-                    if (Boolean.FALSE.equals(isValid)) {
-                        return Mono.error(new IllegalArgumentException("Invalid credentials"));
-                    }
-                    return userRepository.findByEmail(email)
-                            .map(UserMapper::userToResponse);
-                });
-    }
-    
     private Mono<Void> validateRoleExists(Integer roleId) {
         if (roleId == null) {
             return Mono.error(new IllegalArgumentException("Role ID cannot be null"));

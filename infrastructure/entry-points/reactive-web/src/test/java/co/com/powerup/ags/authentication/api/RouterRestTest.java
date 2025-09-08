@@ -7,6 +7,7 @@ import co.com.powerup.ags.authentication.api.helper.GlobalErrorAttributes;
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
 import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
+import co.com.powerup.ags.authentication.usecase.login.LoginUseCase;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
@@ -70,6 +71,9 @@ class RouterRestTest {
     
     @MockitoBean
     private UserUseCase userUseCase;
+    
+    @MockitoBean
+    private LoginUseCase loginUseCase;
     
     UserResponse mockUser1;
     UserResponse mockUser2;

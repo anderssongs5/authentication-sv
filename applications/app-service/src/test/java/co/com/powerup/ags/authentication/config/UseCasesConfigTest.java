@@ -1,5 +1,6 @@
 package co.com.powerup.ags.authentication.config;
 
+import co.com.powerup.ags.authentication.model.auth.gateways.AuthGateway;
 import co.com.powerup.ags.authentication.model.role.gateways.RoleRepository;
 import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
@@ -48,6 +49,11 @@ public class UseCasesConfigTest {
         @Bean
         public RoleRepository roleRepository() {
             return mock(RoleRepository.class);
+        }
+        
+        @Bean
+        public AuthGateway authGateway() {
+            return mock(AuthGateway.class);
         }
 
         @Bean
