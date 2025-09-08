@@ -60,6 +60,7 @@ class RouterRestTest {
     private static final String USER_BASE_SALARY_1 = "50000.00";
     private static final String USER_ID_NUMBER_1 = "4586311";
     private static final String USER_ID_NUMBER_2 = "9852112144";
+    private static final String USER_PASSWORD = "ValidPass123";
 
     @Autowired
     private WebTestClient webTestClient;
@@ -142,15 +143,19 @@ class RouterRestTest {
 
     @Test
     void testPOSTCreateUser() {
-        CreateUserCommand createUserRequest = new CreateUserCommand(USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
-                USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1), USER_ID_NUMBER_1);
+        CreateUserRequest createUserRequest = new CreateUserRequest(
+                USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
+                USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), 
+                USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1), 
+                USER_ID_NUMBER_1, USER_PASSWORD
+        );
         
-        when(userUseCase.createUser(createUserRequest)).thenReturn(Mono.just(mockUser1));
+        when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class))).thenReturn(Mono.just(mockUser1));
         
         webTestClient.post()
                 .uri(USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
-                .body(Mono.just(createUserRequest), CreateUserRequest.class)
+                .bodyValue(createUserRequest)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody()
@@ -174,6 +179,7 @@ class RouterRestTest {
         createUserRequest.setEmail(USER_EMAIL_1);
         createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         createUserRequest.setIdNumber(USER_ID_NUMBER_1);
+        createUserRequest.setPassword(USER_PASSWORD);
 
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAccessResourceFailureException("Unable to connect to database")));
@@ -202,6 +208,7 @@ class RouterRestTest {
         createUserRequest.setEmail(USER_EMAIL_1);
         createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         createUserRequest.setIdNumber(USER_ID_NUMBER_1);
+        createUserRequest.setPassword(USER_PASSWORD);
 
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAlreadyExistsException("User with email " + USER_EMAIL_1 + " already exists")));
@@ -230,6 +237,7 @@ class RouterRestTest {
         createUserRequest.setEmail(USER_EMAIL_1);
         createUserRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         createUserRequest.setIdNumber(USER_ID_NUMBER_1);
+        createUserRequest.setPassword(USER_PASSWORD);
 
         when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class)))
                 .thenReturn(Mono.error(new DataAlreadyExistsException("User with ID number " + USER_ID_NUMBER_1 + " already exists")));
@@ -258,6 +266,7 @@ class RouterRestTest {
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber("");
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -278,6 +287,7 @@ class RouterRestTest {
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(null);
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -437,6 +447,7 @@ class RouterRestTest {
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
         invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -456,6 +467,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -475,6 +487,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -494,6 +507,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail("invalid-email");
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -513,6 +527,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(null);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -532,6 +547,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -551,6 +567,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.now().plusDays(1));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -570,6 +587,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(null);
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -646,6 +664,7 @@ class RouterRestTest {
         invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
         invalidRequest.setEmail(USER_EMAIL_1);
         invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setPassword(USER_PASSWORD);
 
         webTestClient.post()
                 .uri(USERS_PATH)
@@ -1012,5 +1031,154 @@ class RouterRestTest {
                 .jsonPath("$.timestamp").exists()
                 .jsonPath("$.path").isEqualTo("/api/v1/users/search?idNumber=" + USER_ID_NUMBER_1)
                 .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTCreateUserWithBlankPassword() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword("");
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithNullPassword() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword(null);
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithShortPassword() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword("1234567");
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithPasswordMissingUppercase() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword("password123");
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithPasswordMissingLowercase() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword("PASSWORD123");
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithPasswordMissingDigit() {
+        CreateUserRequest invalidRequest = new CreateUserRequest();
+        invalidRequest.setName(USER_NAME_1);
+        invalidRequest.setLastName(USER_LAST_NAME_1);
+        invalidRequest.setAddress(USER_ADDRESS_1);
+        invalidRequest.setPhoneNumber(USER_PHONE_NUMBER_1);
+        invalidRequest.setBirthDate(LocalDate.of(1990, 1, 15));
+        invalidRequest.setEmail(USER_EMAIL_1);
+        invalidRequest.setBaseSalary(new BigDecimal(USER_BASE_SALARY_1));
+        invalidRequest.setIdNumber(USER_ID_NUMBER_1);
+        invalidRequest.setPassword("PasswordTest");
+
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidRequest)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testPOSTCreateUserWithValidPassword() {
+        CreateUserRequest validRequest = new CreateUserRequest(
+                USER_NAME_1, USER_LAST_NAME_1, USER_ADDRESS_1,
+                USER_PHONE_NUMBER_1, LocalDate.of(1985, 5, 20), 
+                USER_EMAIL_1, new BigDecimal(USER_BASE_SALARY_1), 
+                USER_ID_NUMBER_1, "StrongPass123"
+        );
+        
+        when(userUseCase.createUser(org.mockito.ArgumentMatchers.any(CreateUserCommand.class))).thenReturn(Mono.just(mockUser1));
+        
+        webTestClient.post()
+                .uri(USERS_PATH)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(validRequest)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.message").isEqualTo(HandlerMessages.USER_CREATED_SUCCESS)
+                .jsonPath("$.data.id").isEqualTo(USER_ID_1)
+                .jsonPath("$.data.name").isEqualTo(USER_NAME_1);
     }
 }

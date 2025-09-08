@@ -10,6 +10,8 @@ public interface UserReactiveRepository extends ReactiveCrudRepository<UserEntit
     
     Mono<Boolean> existsByEmail(String email);
     
+    Mono<UserEntity> findByEmail(String email);
+    
     Mono<Boolean> existsById(String id);
     
     Mono<UserEntity> findByIdNumber(String idNumber);
