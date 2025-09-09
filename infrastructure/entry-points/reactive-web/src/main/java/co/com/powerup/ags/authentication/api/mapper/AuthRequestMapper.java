@@ -1,7 +1,7 @@
 package co.com.powerup.ags.authentication.api.mapper;
 
 import co.com.powerup.ags.authentication.api.dto.LoginRequest;
-import co.com.powerup.ags.authentication.usecase.login.dto.LoginCommand;
+import co.com.powerup.ags.authentication.usecase.auth.dto.LoginCommand;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

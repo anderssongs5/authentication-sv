@@ -1,7 +1,7 @@
-package co.com.powerup.ags.authentication.usecase.login;
+package co.com.powerup.ags.authentication.usecase.auth;
 
 import co.com.powerup.ags.authentication.model.auth.TokenDTO;
-import co.com.powerup.ags.authentication.usecase.login.dto.LoginCommand;
+import co.com.powerup.ags.authentication.usecase.auth.dto.LoginCommand;
 import co.com.powerup.ags.authentication.model.auth.gateways.AuthGateway;
 import co.com.powerup.ags.authentication.model.common.exception.InvalidCredentialsException;
 import co.com.powerup.ags.authentication.model.role.gateways.RoleRepository;
@@ -13,9 +13,10 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import javax.security.auth.login.CredentialException;
+import java.util.Map;
 
 @RequiredArgsConstructor
-public class LoginUseCase {
+public class AuthUseCase {
     
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -58,5 +59,15 @@ public class LoginUseCase {
                 .flatMap(userRepository::findByEmail)
                 .switchIfEmpty(Mono.error(new CredentialException("User not found with email: " + email)))
                 .map(user -> user.password().matches(plainTextPassword, passwordEncoder));
+    }
+    
+    public Mono<Map<String, Object>> getClaims(String token) {
+        return authGateway.validateToken(token).flatMap(valid -> {
+            if (Boolean.FALSE.equals(valid)) {
+                return Mono.error(new RuntimeException("Invalid token"));
+            }
+            
+            return authGateway.getClaims(token);
+        });
     }
 }

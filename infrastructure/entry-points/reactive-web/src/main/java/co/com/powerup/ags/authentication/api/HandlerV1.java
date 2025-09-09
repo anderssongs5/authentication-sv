@@ -9,11 +9,12 @@ import co.com.powerup.ags.authentication.api.dto.UserResponse;
 import co.com.powerup.ags.authentication.api.mapper.AuthRequestMapper;
 import co.com.powerup.ags.authentication.api.mapper.UserRequestMapper;
 import co.com.powerup.ags.authentication.model.auth.TokenDTO;
-import co.com.powerup.ags.authentication.usecase.login.LoginUseCase;
+import co.com.powerup.ags.authentication.usecase.auth.AuthUseCase;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -34,15 +35,15 @@ public class HandlerV1 {
     private final UserRequestMapper requestMapper;
     private final AuthRequestMapper authRequestMapper;
     private final UserUseCase userUseCase;
-    private final LoginUseCase loginUseCase;
+    private final AuthUseCase authUseCase;
     private final Validator validator;
     
-    public HandlerV1(UserUseCase userUseCase, LoginUseCase loginUseCase, Validator validator) {
+    public HandlerV1(UserUseCase userUseCase, AuthUseCase authUseCase, Validator validator) {
         this.requestMapper = UserRequestMapper.INSTANCE;
         this.authRequestMapper = AuthRequestMapper.INSTANCE;
         this.validator = validator;
         this.userUseCase = userUseCase;
-        this.loginUseCase = loginUseCase;
+        this.authUseCase = authUseCase;
     }
     
     private <T> Mono<T> validateRequest(T request) {
@@ -98,7 +99,8 @@ public class HandlerV1 {
                     return ServerResponse.ok().bodyValue(successResponse);
                 });
     }
-
+    
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADVISOR')")
     public Mono<ServerResponse> createUser(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(CreateUserRequest.class)
                 .flatMap(this::validateRequest)
@@ -191,7 +193,7 @@ public class HandlerV1 {
                 .flatMap(this::validateRequest)
                 .map(authRequestMapper::toRequest)
                 .doOnNext(request -> log.info("Authentication attempt for email: {}", request.email().value()))
-                .flatMap(loginUseCase::authenticateUser)
+                .flatMap(authUseCase::authenticateUser)
                 .doOnNext(response -> log.info("Authentication successful"))
                 .flatMap(tokenDTOResponse -> {
                     SuccessResponse<TokenDTO> successResponse = SuccessResponse.<TokenDTO>builder()

@@ -1,4 +1,4 @@
-package co.com.powerup.ags.authentication.usecase.login.dto;
+package co.com.powerup.ags.authentication.usecase.auth.dto;
 
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
 

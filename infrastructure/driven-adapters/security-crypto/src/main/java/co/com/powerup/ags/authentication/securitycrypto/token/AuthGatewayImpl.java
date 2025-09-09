@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @Service
 public class AuthGatewayImpl implements AuthGateway {
 
@@ -31,5 +33,10 @@ public class AuthGatewayImpl implements AuthGateway {
     @Override
     public Mono<Boolean> validateToken(String token) {
         return Mono.fromCallable(() -> JwtProvider.validate(token, secret));
+    }
+    
+    @Override
+    public Mono<Map<String, Object>> getClaims(String token) {
+        return Mono.fromCallable(() -> JwtProvider.getClaims(token, secret));
     }
 }

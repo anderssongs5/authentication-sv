@@ -1,5 +1,6 @@
 package co.com.powerup.ags.authentication.api.helper;
 
+import co.com.powerup.ags.authentication.api.exception.UnauthorizedException;
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
 import co.com.powerup.ags.authentication.model.common.exception.InvalidCredentialsException;
 import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
@@ -50,6 +51,11 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
             case IllegalArgumentException illegalArgumentException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "INVALID_INPUT",
                             BAD_REQUEST, error.getMessage(), path);
+            case UnauthorizedException unauthorizedException -> {
+                log.warn("Authorization failed", unauthorizedException);
+                setErrorAttributes(errorAttributes, HttpStatus.UNAUTHORIZED, "UNAUTHORIZED",
+                        "Unauthorized", "Authorization is invalid", path);
+            }
             case null, default -> {
                 log.error("Unexpected error", error);
                 
