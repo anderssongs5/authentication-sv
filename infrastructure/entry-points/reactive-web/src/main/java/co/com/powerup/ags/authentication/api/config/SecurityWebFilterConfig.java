@@ -1,8 +1,8 @@
 package co.com.powerup.ags.authentication.api.config;
 
 import co.com.powerup.ags.authentication.api.constants.SecurityConstants;
-import co.com.powerup.ags.authentication.api.jwt.JwtFilter;
-import co.com.powerup.ags.authentication.api.repository.SecurityContextRepository;
+import co.com.powerup.ags.authentication.api.security.JwtFilter;
+import co.com.powerup.ags.authentication.api.security.SecurityContextRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
