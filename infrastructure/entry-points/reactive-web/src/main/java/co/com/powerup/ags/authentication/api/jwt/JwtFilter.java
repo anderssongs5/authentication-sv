@@ -1,4 +1,4 @@
-package co.com.powerup.ags.authentication.api.jwt.manager;
+package co.com.powerup.ags.authentication.api.jwt;
 
 import co.com.powerup.ags.authentication.api.constants.SecurityConstants;
 import co.com.powerup.ags.authentication.api.exception.UnauthorizedException;

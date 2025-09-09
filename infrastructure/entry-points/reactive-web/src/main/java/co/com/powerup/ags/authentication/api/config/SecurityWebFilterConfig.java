@@ -1,7 +1,7 @@
 package co.com.powerup.ags.authentication.api.config;
 
 import co.com.powerup.ags.authentication.api.constants.SecurityConstants;
-import co.com.powerup.ags.authentication.api.jwt.manager.JwtFilter;
+import co.com.powerup.ags.authentication.api.jwt.JwtFilter;
 import co.com.powerup.ags.authentication.api.repository.SecurityContextRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,11 +14,11 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-public class SecurityConfig {
+public class SecurityWebFilterConfig {
 
     private final SecurityContextRepository securityContextRepository;
 
-    public SecurityConfig(SecurityContextRepository securityContextRepository) {
+    public SecurityWebFilterConfig(SecurityContextRepository securityContextRepository) {
         this.securityContextRepository = securityContextRepository;
     }
 

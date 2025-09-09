@@ -1,6 +1,6 @@
 package co.com.powerup.ags.authentication.api.repository;
 
-import co.com.powerup.ags.authentication.api.jwt.manager.JwtAuthenticationManager;
+import co.com.powerup.ags.authentication.api.jwt.JwtAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
