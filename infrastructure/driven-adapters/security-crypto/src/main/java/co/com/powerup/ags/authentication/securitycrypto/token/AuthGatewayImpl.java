@@ -16,8 +16,8 @@ public class AuthGatewayImpl implements AuthGateway {
     private final long expirationTime;
 
     public AuthGatewayImpl(
-            @Value("${jwt.secret:bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA=}") String secret,
-            @Value("${jwt.expiration:3600}") long expirationTime) {
+            @Value("${security.jwt.secret:bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA=}") String secret,
+            @Value("${security.jwt.expiration:3600}") long expirationTime) {
         this.secret = secret;
         this.expirationTime = expirationTime;
     }
