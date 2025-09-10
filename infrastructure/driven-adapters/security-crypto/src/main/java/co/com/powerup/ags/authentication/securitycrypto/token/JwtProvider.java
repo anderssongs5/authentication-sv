@@ -8,6 +8,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -28,8 +29,8 @@ public class JwtProvider {
         var expirationInstant = currentInstant.plus(expiration, ChronoUnit.SECONDS);
 
         return Jwts.builder()
-                .subject(user.email().value())
-                .claim("role", user.role().getName())
+                .subject(user.getEmail().value())
+                .claim("role", user.getRole().getName())
                 .issuedAt(Date.from(currentInstant))
                 .expiration(Date.from(expirationInstant))
                 .signWith(getKey(secret))
@@ -63,13 +64,15 @@ public class JwtProvider {
                     .getSubject();
             return true;
         } catch (ExpiredJwtException e) {
-            LOGGER.severe("token expired");
+            LOGGER.severe("Token expired");
         } catch (UnsupportedJwtException e) {
-            LOGGER.severe("token unsupported");
+            LOGGER.severe("Token unsupported");
         } catch (MalformedJwtException e) {
-            LOGGER.severe("token malformed");
+            LOGGER.severe("Token malformed");
         } catch (IllegalArgumentException e) {
-            LOGGER.severe("illegal args");
+            LOGGER.severe("Illegal args");
+        } catch (SignatureException e) {
+            LOGGER.severe("Signature does not match computed signature");
         }
         return false;
     }

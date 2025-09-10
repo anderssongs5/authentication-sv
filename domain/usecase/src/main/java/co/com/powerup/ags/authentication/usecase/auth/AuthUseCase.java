@@ -1,6 +1,7 @@
 package co.com.powerup.ags.authentication.usecase.auth;
 
 import co.com.powerup.ags.authentication.model.auth.TokenDTO;
+import co.com.powerup.ags.authentication.model.common.exception.InvalidAuthorizationException;
 import co.com.powerup.ags.authentication.usecase.auth.dto.LoginCommand;
 import co.com.powerup.ags.authentication.model.auth.gateways.AuthGateway;
 import co.com.powerup.ags.authentication.model.common.exception.InvalidCredentialsException;
@@ -38,16 +39,7 @@ public class AuthUseCase {
     private Mono<EnrichedUser> enrichUserWithFullRole(User user) {
         return roleRepository.getRoleById(user.roleId())
                 .map(fullRole -> new EnrichedUser(
-                        user.id(),
-                        user.name(),
-                        user.lastName(),
-                        user.address(),
-                        user.phoneNumber(),
-                        user.birthDate(),
-                        user.email(),
-                        user.baseSalary(),
-                        user.idNumber(),
-                        user.password(),
+                        user,
                         fullRole
                 ));
     }
@@ -64,7 +56,7 @@ public class AuthUseCase {
     public Mono<Map<String, Object>> getClaims(String token) {
         return authGateway.validateToken(token).flatMap(valid -> {
             if (Boolean.FALSE.equals(valid)) {
-                return Mono.error(new RuntimeException("Invalid token"));
+                return Mono.error(new InvalidAuthorizationException("Invalid token"));
             }
             
             return authGateway.getClaims(token);

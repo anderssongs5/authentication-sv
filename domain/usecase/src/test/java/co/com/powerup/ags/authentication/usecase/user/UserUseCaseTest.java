@@ -366,4 +366,63 @@ class UserUseCaseTest {
                         throwable.getMessage().contains("User not found with id number: " + USER_ID_NUMBER))
                 .verify();
     }
+
+    @Test
+    void shouldGetUserByEmailSuccessfully() {
+        when(userRepository.findByEmail(USER_EMAIL)).thenReturn(Mono.just(validUser));
+
+        Mono<UserResponse> result = userUseCase.getUserByEmail(USER_EMAIL);
+
+        StepVerifier.create(result)
+                .assertNext(userResponse -> {
+                    assertThat(userResponse).isNotNull();
+                    assertThat(userResponse.email()).isEqualTo(USER_EMAIL);
+                    assertThat(userResponse.name()).isEqualTo(USER_NAME);
+                    assertThat(userResponse.id()).isEqualTo(USER_ID);
+                })
+                .verifyComplete();
+                
+        verify(userRepository).findByEmail(USER_EMAIL);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGettingUserByNonExistentEmail() {
+        when(userRepository.findByEmail(USER_EMAIL)).thenReturn(Mono.empty());
+
+        Mono<UserResponse> result = userUseCase.getUserByEmail(USER_EMAIL);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof UserNotFoundException &&
+                        throwable.getMessage().contains("User not found with email: " + USER_EMAIL))
+                .verify();
+                
+        verify(userRepository).findByEmail(USER_EMAIL);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGettingUserByNullEmail() {
+        Mono<UserResponse> result = userUseCase.getUserByEmail(null);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("Email cannot be null or empty"))
+                .verify();
+                
+        verify(userRepository, never()).findByEmail(anyString());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGettingUserByEmptyEmail() {
+        Mono<UserResponse> result = userUseCase.getUserByEmail("   ");
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException &&
+                        throwable.getMessage().contains("Email cannot be null or empty"))
+                .verify();
+                
+        verify(userRepository, never()).findByEmail(anyString());
+    }
 }

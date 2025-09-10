@@ -89,14 +89,22 @@ public class UserUseCase {
                 .switchIfEmpty(Mono.error(new UserNotFoundException(USER_NOT_FOUND_ID + id)))
                 .flatMap(user -> userRepository.deleteById(id));
     }
-    
-    
+
     public Mono<UserResponse> getUserByIdNumber(String idNumber) {
         return Mono.justOrEmpty(idNumber)
                 .filter(idn -> idn != null && !idn.trim().isEmpty())
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("ID number cannot be null or empty")))
                 .flatMap(userRepository::findByIdNumber)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id number: " + idNumber)))
+                .map(UserMapper::userToResponse);
+    }
+    
+    public Mono<UserResponse> getUserByEmail(String email) {
+        return Mono.justOrEmpty(email)
+                .filter(mail -> mail != null && !mail.trim().isEmpty())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
+                .flatMap(userRepository::findByEmail)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with email: " + email)))
                 .map(UserMapper::userToResponse);
     }
     

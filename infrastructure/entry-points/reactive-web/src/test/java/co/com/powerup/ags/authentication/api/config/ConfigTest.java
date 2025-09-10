@@ -19,7 +19,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @ContextConfiguration(classes = {RouterRest.class, HandlerV1.class})
-@WebFluxTest
+@WebFluxTest(excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration.class
+})
 @Import({CorsConfig.class, SecurityHeadersConfig.class})
 class ConfigTest {
 

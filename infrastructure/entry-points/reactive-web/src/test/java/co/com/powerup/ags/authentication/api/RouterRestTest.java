@@ -4,16 +4,21 @@ import co.com.powerup.ags.authentication.api.constants.HandlerMessages;
 import co.com.powerup.ags.authentication.api.dto.CreateUserRequest;
 import co.com.powerup.ags.authentication.api.dto.UpdateUserRequest;
 import co.com.powerup.ags.authentication.api.helper.GlobalErrorAttributes;
+import co.com.powerup.ags.authentication.model.auth.TokenDTO;
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.InvalidAuthorizationException;
+import co.com.powerup.ags.authentication.model.common.exception.InvalidCredentialsException;
 import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import co.com.powerup.ags.authentication.usecase.auth.AuthUseCase;
+import co.com.powerup.ags.authentication.usecase.auth.dto.LoginCommand;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.MediaType;
@@ -30,6 +35,7 @@ import org.springframework.validation.Validator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 import static org.mockito.Mockito.when;
 
@@ -43,7 +49,10 @@ class TestConfig {
 
 @ContextConfiguration(classes = {RouterRest.class, HandlerV1.class, TestConfig.class,
         GlobalExceptionHandler.class, GlobalErrorAttributes.class})
-@WebFluxTest
+@WebFluxTest(excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration.class
+})
 class RouterRestTest {
     
     private static final String USER_ID_1 = "123e4567-e89b-12d3-a456-426614174001";
@@ -1237,6 +1246,299 @@ class RouterRestTest {
                 .jsonPath("$.message").exists()
                 .jsonPath("$.timestamp").exists()
                 .jsonPath("$.path").isEqualTo(USERS_PATH)
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testGETSearchUserByEmail() {
+        when(userUseCase.getUserByEmail(USER_EMAIL_1)).thenReturn(Mono.just(mockUser1));
+
+        String uri = USERS_PATH + "/search?email=" + USER_EMAIL_1;
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo(HandlerMessages.USER_RETRIEVED_SUCCESS)
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?email=" + USER_EMAIL_1)
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.data.id").isEqualTo(USER_ID_1)
+                .jsonPath("$.data.name").isEqualTo(USER_NAME_1)
+                .jsonPath("$.data.lastName").isEqualTo(USER_LAST_NAME_1)
+                .jsonPath("$.data.email").isEqualTo(USER_EMAIL_1)
+                .jsonPath("$.data.idNumber").isEqualTo(USER_ID_NUMBER_1)
+                .jsonPath("$.data.roleId").isEqualTo(USER_ROLE_ID_1);
+    }
+
+    @Test
+    void testGETSearchUserByEmailNotFound() {
+        String nonExistentEmail = "nonexistent@email.com";
+
+        when(userUseCase.getUserByEmail(nonExistentEmail))
+                .thenReturn(Mono.error(new UserNotFoundException("User not found with email: " + nonExistentEmail)));
+
+        String uri = USERS_PATH + "/search?email=" + nonExistentEmail;
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(404)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?email=" + nonExistentEmail)
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testGETSearchUserWithNoParameters() {
+        String uri = USERS_PATH + "/search";
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search");
+    }
+
+    @Test
+    void testGETSearchUserByEmailWithDatabaseConnectionError() {
+        when(userUseCase.getUserByEmail(USER_EMAIL_1))
+                .thenReturn(Mono.error(new DataAccessResourceFailureException("Unable to connect to database")));
+
+        String uri = USERS_PATH + "/search?email=" + USER_EMAIL_1;
+        webTestClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isEqualTo(500)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/users/search?email=" + USER_EMAIL_1)
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTAuthenticate() {
+        TokenDTO tokenDTO = new TokenDTO("eyJhbGciOiJIUzI1NiJ9.test.token", "Bearer", 3600L);
+        
+        when(authUseCase.authenticateUser(ArgumentMatchers.any(LoginCommand.class)))
+                .thenReturn(Mono.just(tokenDTO));
+
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("email=user@test.com&password=password123")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Authentication successful")
+                .jsonPath("$.path").isEqualTo("/api/v1/login")
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.data.token").isEqualTo("eyJhbGciOiJIUzI1NiJ9.test.token")
+                .jsonPath("$.data.tokenType").isEqualTo("Bearer")
+                .jsonPath("$.data.expiresIn").isEqualTo(3600);
+    }
+
+    @Test
+    void testPOSTAuthenticateWithInvalidCredentials() {
+        when(authUseCase.authenticateUser(org.mockito.ArgumentMatchers.any(LoginCommand.class)))
+                .thenReturn(Mono.error(new InvalidCredentialsException("Invalid email or password")));
+
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("email=user@test.com&password=wrongpassword")
+                .exchange()
+                .expectStatus().isEqualTo(401)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/login")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTAuthenticateWithInvalidEmail() {
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("email=invalid-email&password=password123")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/login")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTAuthenticateWithShortPassword() {
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("email=user@test.com&password=123")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/login")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTAuthenticateWithMissingCredentials() {
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/login")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTAuthenticateWithDatabaseError() {
+        when(authUseCase.authenticateUser(org.mockito.ArgumentMatchers.any(LoginCommand.class)))
+                .thenReturn(Mono.error(new DataAccessResourceFailureException("Database connection failed")));
+
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("email=user@test.com&password=password123")
+                .exchange()
+                .expectStatus().isEqualTo(500)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/login")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTIntrospectWithValidToken() {
+        Map<String, Object> claims = Map.of(
+                "sub", "user@test.com",
+                "role", "ADMIN",
+                "iat", 1630500000,
+                "exp", 1630586400
+        );
+
+        when(authUseCase.getClaims("eyJhbGciOiJIUzI1NiJ9.test.token"))
+                .thenReturn(Mono.just(claims));
+
+        webTestClient.post()
+                .uri("/api/v1/introspect")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("token=eyJhbGciOiJIUzI1NiJ9.test.token")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Token introspection successful")
+                .jsonPath("$.path").isEqualTo("/api/v1/introspect")
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.data.active").isEqualTo(true)
+                .jsonPath("$.data.token_type").isEqualTo("Bearer")
+                .jsonPath("$.data.sub").isEqualTo("user@test.com")
+                .jsonPath("$.data.role").isEqualTo("ADMIN");
+    }
+
+    @Test
+    void testPOSTIntrospectWithInvalidToken() {
+        when(authUseCase.getClaims("invalid.token"))
+                .thenReturn(Mono.error(new InvalidAuthorizationException("Invalid token")));
+
+        webTestClient.post()
+                .uri("/api/v1/introspect")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("token=invalid.token")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Token introspection completed")
+                .jsonPath("$.path").isEqualTo("/api/v1/introspect")
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.data.active").isEqualTo(false);
+    }
+
+    @Test
+    void testPOSTIntrospectWithMissingToken() {
+        webTestClient.post()
+                .uri("/api/v1/introspect")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/introspect")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTIntrospectWithEmptyToken() {
+        webTestClient.post()
+                .uri("/api/v1/introspect")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("token=")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/introspect")
+                .jsonPath("$.error").exists();
+    }
+
+    @Test
+    void testPOSTIntrospectWithExpiredToken() {
+        when(authUseCase.getClaims("expired.token"))
+                .thenReturn(Mono.error(new InvalidAuthorizationException("Token expired")));
+
+        webTestClient.post()
+                .uri("/api/v1/introspect")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("token=expired.token")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Token introspection completed")
+                .jsonPath("$.path").isEqualTo("/api/v1/introspect")
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.data.active").isEqualTo(false);
+    }
+
+    @Test
+    void testPOSTIntrospectWithDatabaseError() {
+        when(authUseCase.getClaims("valid.token"))
+                .thenReturn(Mono.error(new DataAccessResourceFailureException("Database connection failed")));
+
+        webTestClient.post()
+                .uri("/api/v1/introspect")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue("token=valid.token")
+                .exchange()
+                .expectStatus().isEqualTo(500)
+                .expectBody()
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists()
+                .jsonPath("$.path").isEqualTo("/api/v1/introspect")
                 .jsonPath("$.error").exists();
     }
 }
