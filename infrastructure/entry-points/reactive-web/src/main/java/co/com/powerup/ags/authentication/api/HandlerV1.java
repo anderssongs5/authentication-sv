@@ -174,7 +174,7 @@ public class HandlerV1 {
                 });
     }
     
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ADVISOR') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADVISOR') or hasRole('CLIENT')")
     public Mono<ServerResponse> getUserByIdNumberOrEmail(ServerRequest serverRequest) {
         var idNumber = serverRequest.queryParam("idNumber");
         var email = serverRequest.queryParam("email");
