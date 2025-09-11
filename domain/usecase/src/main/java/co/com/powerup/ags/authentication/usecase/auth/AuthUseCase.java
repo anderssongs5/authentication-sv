@@ -47,9 +47,9 @@ public class AuthUseCase {
     private Mono<Boolean> verifyPassword(String email, String plainTextPassword) {
         return Mono.justOrEmpty(email)
                 .filter(e -> e != null && !e.trim().isEmpty())
-                .switchIfEmpty(Mono.error(new CredentialException("Email cannot be null or empty")))
+                .switchIfEmpty(Mono.error(new InvalidCredentialsException("Email cannot be null or empty")))
                 .flatMap(userRepository::findByEmail)
-                .switchIfEmpty(Mono.error(new CredentialException("User not found with email: " + email)))
+                .switchIfEmpty(Mono.error(new InvalidCredentialsException("User not found with email: " + email)))
                 .map(user -> user.password().matches(plainTextPassword, passwordEncoder));
     }
     

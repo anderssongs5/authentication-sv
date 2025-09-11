@@ -1,6 +1,18 @@
 -- Script to create the users table in MySQL
 -- Database: authenticacion_db
 
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(200) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_name (name)
+);
+
+ALTER TABLE roles COMMENT = 'Table that stores roles';
+
 CREATE DATABASE IF NOT EXISTS authenticacion_db;
 USE authenticacion_db;
 
@@ -27,16 +39,3 @@ CREATE TABLE users (
 
 -- Comments about the table
 ALTER TABLE users COMMENT = 'Table that stores user information for the authentication system';
-
-
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description VARCHAR(200) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    INDEX idx_name (name)
-);
-
-ALTER TABLE roles COMMENT = 'Table that stores roles';
