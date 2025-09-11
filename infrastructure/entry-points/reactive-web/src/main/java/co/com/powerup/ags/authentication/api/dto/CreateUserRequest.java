@@ -52,4 +52,15 @@ public class CreateUserRequest {
     @NotBlank(message = "ID number is required and cannot be empty")
     private String idNumber;
     
+    @Schema(description = "User's password", example = "SecurePass123", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "Password is required and cannot be empty")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", 
+             message = "Password must contain at least one uppercase letter, one lowercase letter, and one digit")
+    private String password;
+    
+    @Schema(description = "User's role id", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Min(value = 0, message = "Role ID must be greater than 0")
+    private Integer roleId;
+    
 }

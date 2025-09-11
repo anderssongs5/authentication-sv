@@ -26,6 +26,8 @@ class UserRequestMapperTest {
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "561615616";
+    private static final String USER_PASSWORD = "ValidPass123";
+    private static final Integer USER_ROLE_ID = 1;
 
     private final UserRequestMapper mapper = UserRequestMapper.INSTANCE;
     
@@ -43,7 +45,9 @@ class UserRequestMapperTest {
                 USER_BIRTH_DATE,
                 USER_EMAIL,
                 USER_BASE_SALARY,
-                USER_ID_NUMBER
+                USER_ID_NUMBER,
+                USER_PASSWORD,
+                USER_ROLE_ID
         );
 
         updateUserRequest = new UpdateUserRequest(
@@ -66,7 +70,8 @@ class UserRequestMapperTest {
                 USER_BIRTH_DATE,
                 USER_EMAIL,
                 USER_BASE_SALARY,
-                USER_ID_NUMBER
+                USER_ID_NUMBER,
+                USER_ROLE_ID
         );
     }
 
@@ -82,6 +87,19 @@ class UserRequestMapperTest {
         assertThat(result.birthDate()).isEqualTo(createUserRequest.getBirthDate());
         assertThat(result.email()).isEqualTo(createUserRequest.getEmail());
         assertThat(result.baseSalary()).isEqualTo(createUserRequest.getBaseSalary());
+        assertThat(result.idNumber()).isEqualTo(createUserRequest.getIdNumber());
+        assertThat(result.password()).isEqualTo(createUserRequest.getPassword());
+        assertThat(result.roleId()).isEqualTo(createUserRequest.getRoleId());
+    }
+
+    @Test
+    void shouldMapPasswordFieldInCreateUserRequest() {
+        assertThat(createUserRequest.getPassword()).isEqualTo(USER_PASSWORD);
+        
+        CreateUserCommand result = mapper.toCommand(createUserRequest);
+        
+        assertThat(result.password()).isNotNull();
+        assertThat(result.password()).isEqualTo(USER_PASSWORD);
     }
 
     @Test
@@ -97,6 +115,7 @@ class UserRequestMapperTest {
         assertThat(result.birthDate()).isEqualTo(updateUserRequest.getBirthDate());
         assertThat(result.email()).isEqualTo(updateUserRequest.getEmail());
         assertThat(result.baseSalary()).isEqualTo(updateUserRequest.getBaseSalary());
+        assertThat(result.idNumber()).isEqualTo(updateUserRequest.getIdNumber());
     }
 
     @Test
@@ -112,6 +131,8 @@ class UserRequestMapperTest {
         assertThat(result.birthDate()).isEqualTo(domainUserResponse.birthDate());
         assertThat(result.email()).isEqualTo(domainUserResponse.email());
         assertThat(result.baseSalary()).isEqualTo(domainUserResponse.baseSalary());
+        assertThat(result.idNumber()).isEqualTo(domainUserResponse.idNumber());
+        assertThat(result.roleId()).isEqualTo(domainUserResponse.roleId());
     }
 
     @Test
@@ -126,7 +147,8 @@ class UserRequestMapperTest {
                         LocalDate.of(1985, 5, 20),
                         "andersson.garcia@example.com",
                         new BigDecimal("60000.00"),
-                        "1245679"
+                        "1245679",
+                        USER_ROLE_ID
                 );
 
         List<co.com.powerup.ags.authentication.usecase.user.dto.UserResponse> domainList = 
@@ -153,17 +175,21 @@ class UserRequestMapperTest {
         CreateUserRequest requestWithNulls = new CreateUserRequest();
         requestWithNulls.setName(USER_NAME);
         requestWithNulls.setLastName(USER_LAST_NAME);
+        requestWithNulls.setPassword(USER_PASSWORD);
 
         CreateUserCommand result = mapper.toCommand(requestWithNulls);
 
         assertThat(result).isNotNull();
         assertThat(result.name()).isEqualTo(USER_NAME);
         assertThat(result.lastName()).isEqualTo(USER_LAST_NAME);
+        assertThat(result.password()).isEqualTo(USER_PASSWORD);
         assertThat(result.address()).isNull();
         assertThat(result.phoneNumber()).isNull();
         assertThat(result.birthDate()).isNull();
         assertThat(result.email()).isNull();
         assertThat(result.baseSalary()).isNull();
+        assertThat(result.idNumber()).isNull();
+        assertThat(result.roleId()).isNull();
     }
 
     @Test
@@ -183,6 +209,7 @@ class UserRequestMapperTest {
         assertThat(result.phoneNumber()).isNull();
         assertThat(result.birthDate()).isNull();
         assertThat(result.baseSalary()).isNull();
+        assertThat(result.idNumber()).isNull();
     }
 
     @Test
@@ -203,11 +230,13 @@ class UserRequestMapperTest {
 
         assertThat(command.birthDate()).isInstanceOf(LocalDate.class);
         assertThat(command.baseSalary()).isInstanceOf(BigDecimal.class);
+        assertThat(command.password()).isInstanceOf(String.class);
         assertThat(response.birthDate()).isInstanceOf(LocalDate.class);
         assertThat(response.baseSalary()).isInstanceOf(BigDecimal.class);
 
         assertThat(command.baseSalary()).isEqualTo(USER_BASE_SALARY);
         assertThat(command.birthDate()).isEqualTo(USER_BIRTH_DATE);
+        assertThat(command.password()).isEqualTo(USER_PASSWORD);
         assertThat(response.baseSalary()).isEqualTo(USER_BASE_SALARY);
         assertThat(response.birthDate()).isEqualTo(USER_BIRTH_DATE);
     }
@@ -226,7 +255,8 @@ class UserRequestMapperTest {
                         command.birthDate(),
                         command.email(),
                         command.baseSalary(),
-                        command.idNumber()
+                        command.idNumber(),
+                        command.roleId()
                 );
         
         UserResponse finalResponse = mapper.toResponse(simulatedDomainResponse);
@@ -238,5 +268,36 @@ class UserRequestMapperTest {
         assertThat(finalResponse.birthDate()).isEqualTo(createUserRequest.getBirthDate());
         assertThat(finalResponse.email()).isEqualTo(createUserRequest.getEmail());
         assertThat(finalResponse.baseSalary()).isEqualTo(createUserRequest.getBaseSalary());
+        assertThat(finalResponse.idNumber()).isEqualTo(createUserRequest.getIdNumber());
+        assertThat(finalResponse.roleId()).isEqualTo(createUserRequest.getRoleId());
+    }
+
+    @Test
+    void shouldValidatePasswordIsMappedFromRequestToCommand() {
+        String testPassword = "TestPassword123";
+        createUserRequest.setPassword(testPassword);
+        
+        CreateUserCommand result = mapper.toCommand(createUserRequest);
+        
+        assertThat(result.password()).isNotNull();
+        assertThat(result.password()).isEqualTo(testPassword);
+    }
+
+    @Test
+    void shouldHandleNullPasswordInCreateUserRequest() {
+        createUserRequest.setPassword(null);
+        
+        CreateUserCommand result = mapper.toCommand(createUserRequest);
+        
+        assertThat(result.password()).isNull();
+    }
+
+    @Test
+    void shouldHandleEmptyPasswordInCreateUserRequest() {
+        createUserRequest.setPassword("");
+        
+        CreateUserCommand result = mapper.toCommand(createUserRequest);
+        
+        assertThat(result.password()).isEmpty();
     }
 }

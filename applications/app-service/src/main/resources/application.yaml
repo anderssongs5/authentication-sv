@@ -37,3 +37,8 @@ adapters:
     schema: "public"
     username: "authuser"
     password: "authpassword"
+
+security:
+  jwt:
+    secret: "bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA="
+    expiration: 3600

@@ -14,13 +14,29 @@ CREATE TABLE users (
     birth_date DATE NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     base_salary DECIMAL(10,2) NOT NULL CHECK (base_salary >= 0 AND base_salary <= 15000000.00),
+    password VARCHAR(200) NOT NULL,
+    role_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_email (email),
     INDEX idx_identity_number (identity_number),
-    INDEX idx_email_identity_number (email, identity_number)
+    INDEX idx_email_identity_number (email, identity_number),
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
 -- Comments about the table
 ALTER TABLE users COMMENT = 'Table that stores user information for the authentication system';
+
+
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(200) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_name (name)
+);
+
+ALTER TABLE roles COMMENT = 'Table that stores roles';

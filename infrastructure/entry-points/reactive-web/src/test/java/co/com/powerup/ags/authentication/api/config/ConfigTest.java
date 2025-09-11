@@ -2,6 +2,7 @@ package co.com.powerup.ags.authentication.api.config;
 
 import co.com.powerup.ags.authentication.api.HandlerV1;
 import co.com.powerup.ags.authentication.api.RouterRest;
+import co.com.powerup.ags.authentication.usecase.auth.AuthUseCase;
 import co.com.powerup.ags.authentication.usecase.user.UserUseCase;
 import co.com.powerup.ags.authentication.usecase.user.dto.UserResponse;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @ContextConfiguration(classes = {RouterRest.class, HandlerV1.class})
-@WebFluxTest
+@WebFluxTest(excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration.class
+})
 @Import({CorsConfig.class, SecurityHeadersConfig.class})
 class ConfigTest {
 
@@ -27,11 +31,14 @@ class ConfigTest {
     
     @MockitoBean
     private UserUseCase userUseCase;
+    
+    @MockitoBean
+    private AuthUseCase authUseCase;
 
     @Test
     void corsConfigurationShouldAllowOrigins() {
         Mockito.when(userUseCase.getAllUsers()).thenReturn(Flux.just(new UserResponse("", "",
-                "", "", "", LocalDate.now(), "", BigDecimal.ONE, "")));
+                "", "", "", LocalDate.now(), "", BigDecimal.ONE, "", 1)));
         
         webTestClient.get()
                 .uri("/api/v1/users")

@@ -1,8 +1,11 @@
 package co.com.powerup.ags.authentication.usecase.user;
 
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
+import co.com.powerup.ags.authentication.model.role.gateways.RoleRepository;
 import co.com.powerup.ags.authentication.model.user.User;
+import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
 import co.com.powerup.ags.authentication.usecase.user.dto.CreateUserCommand;
 import co.com.powerup.ags.authentication.usecase.user.dto.UpdateUserCommand;
@@ -17,13 +20,18 @@ public class UserUseCase {
     
     public static final String USER_NOT_FOUND_ID = "User not found with ID: ";
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
     
-    public UserUseCase(UserRepository userRepository) {
+    public UserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     public Mono<UserResponse> createUser(CreateUserCommand command) {
-        return userRepository.existsByEmailOrIdNumber(command.email(), command.idNumber())
+        return validateRoleExists(command.roleId())
+                .then(userRepository.existsByEmailOrIdNumber(command.email(), command.idNumber()))
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
                         return Mono.error(
@@ -32,7 +40,7 @@ public class UserUseCase {
                                                 command.email(), command.idNumber()))
                         );
                     }
-                    return UserMapper.commandToUser(command)
+                    return UserMapper.commandToUser(command, passwordEncoder)
                             .map(user -> new User(
                                     UUID.randomUUID().toString(),
                                     user.name(),
@@ -42,7 +50,9 @@ public class UserUseCase {
                                     user.birthDate(),
                                     user.email(),
                                     user.baseSalary(),
-                                    command.idNumber()
+                                    user.idNumber(),
+                                    user.password(),
+                                    user.roleId()
                             ));
                 })
                 .flatMap(userRepository::save)
@@ -52,7 +62,7 @@ public class UserUseCase {
     public Mono<UserResponse> updateUser(UpdateUserCommand command) {
         return userRepository.findById(command.id())
                 .switchIfEmpty(Mono.error(new UserNotFoundException(USER_NOT_FOUND_ID + command.id())))
-                .flatMap(existingUser -> UserMapper.commandToUser(command))
+                .flatMap(existingUser -> UserMapper.commandToUser(command, existingUser))
                 .flatMap(userRepository::save)
                 .map(UserMapper::userToResponse);
     }
@@ -79,8 +89,7 @@ public class UserUseCase {
                 .switchIfEmpty(Mono.error(new UserNotFoundException(USER_NOT_FOUND_ID + id)))
                 .flatMap(user -> userRepository.deleteById(id));
     }
-    
-    
+
     public Mono<UserResponse> getUserByIdNumber(String idNumber) {
         return Mono.justOrEmpty(idNumber)
                 .filter(idn -> idn != null && !idn.trim().isEmpty())
@@ -88,5 +97,24 @@ public class UserUseCase {
                 .flatMap(userRepository::findByIdNumber)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id number: " + idNumber)))
                 .map(UserMapper::userToResponse);
+    }
+    
+    public Mono<UserResponse> getUserByEmail(String email) {
+        return Mono.justOrEmpty(email)
+                .filter(mail -> mail != null && !mail.trim().isEmpty())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email cannot be null or empty")))
+                .flatMap(userRepository::findByEmail)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with email: " + email)))
+                .map(UserMapper::userToResponse);
+    }
+    
+    private Mono<Void> validateRoleExists(Integer roleId) {
+        if (roleId == null) {
+            return Mono.error(new IllegalArgumentException("Role ID cannot be null"));
+        }
+        
+        return roleRepository.getRoleById(roleId)
+                .switchIfEmpty(Mono.error(new RoleNotFoundException("Role with ID " + roleId + " does not exist")))
+                .then();
     }
 }

@@ -12,8 +12,9 @@ public interface UserRepository {
     
     Mono<User> findById(String id);
     
-    
     Mono<Boolean> existsByEmail(String email);
+    
+    Mono<User> findByEmail(String email);
     
     Mono<Void> deleteById(String id);
     

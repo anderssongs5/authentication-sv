@@ -1,5 +1,8 @@
 package co.com.powerup.ags.authentication.config;
 
+import co.com.powerup.ags.authentication.model.auth.gateways.AuthGateway;
+import co.com.powerup.ags.authentication.model.role.gateways.RoleRepository;
+import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import co.com.powerup.ags.authentication.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -36,6 +39,21 @@ public class UseCasesConfigTest {
         @Bean
         public UserRepository userRepository() {
             return mock(UserRepository.class);
+        }
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return mock(PasswordEncoder.class);
+        }
+        
+        @Bean
+        public RoleRepository roleRepository() {
+            return mock(RoleRepository.class);
+        }
+        
+        @Bean
+        public AuthGateway authGateway() {
+            return mock(AuthGateway.class);
         }
 
         @Bean

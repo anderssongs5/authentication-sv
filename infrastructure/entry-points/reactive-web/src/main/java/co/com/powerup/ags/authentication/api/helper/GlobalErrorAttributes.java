@@ -1,25 +1,27 @@
 package co.com.powerup.ags.authentication.api.helper;
 
+import co.com.powerup.ags.authentication.api.exception.AccessDeniedException;
+import co.com.powerup.ags.authentication.api.exception.UnauthorizedException;
 import co.com.powerup.ags.authentication.model.common.exception.DataAlreadyExistsException;
+import co.com.powerup.ags.authentication.model.common.exception.InvalidCredentialsException;
+import co.com.powerup.ags.authentication.model.common.exception.RoleNotFoundException;
 import co.com.powerup.ags.authentication.model.common.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 public class GlobalErrorAttributes extends DefaultErrorAttributes {
-
+    
     private static final Logger log = LoggerFactory.getLogger(GlobalErrorAttributes.class);
+    public static final String BAD_REQUEST = "Bad Request";
     
     @Override
     public Map<String, Object> getErrorAttributes(ServerRequest serverRequest, ErrorAttributeOptions options) {
@@ -38,9 +40,25 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
             case UserNotFoundException userNotFoundException ->
                     setErrorAttributes(errorAttributes, HttpStatus.NOT_FOUND, "DATA_NOT_FOUND",
                             "Not Found", userNotFoundException.getMessage(), path);
+            case RoleNotFoundException roleNotFoundException ->
+                    setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "DATA_NOT_FOUND",
+                            BAD_REQUEST, roleNotFoundException.getMessage(), path);
+            case InvalidCredentialsException invalidCredentialsException ->
+                    setErrorAttributes(errorAttributes, HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS",
+                            "Unauthorized", invalidCredentialsException.getMessage(), path);
+            case AccessDeniedException accessDeniedException -> {
+                log.warn("Access denied", accessDeniedException);
+                setErrorAttributes(errorAttributes, HttpStatus.FORBIDDEN, "ACCESS_DENIED",
+                        "Forbidden", "Access denied. You don't have sufficient permissions to access this resource.", path);
+            }
             case IllegalArgumentException illegalArgumentException ->
                     setErrorAttributes(errorAttributes, HttpStatus.BAD_REQUEST, "INVALID_INPUT",
-                            "Bad Request", error.getMessage(), path);
+                            BAD_REQUEST, error.getMessage(), path);
+            case UnauthorizedException unauthorizedException -> {
+                log.warn("Authorization failed", unauthorizedException);
+                setErrorAttributes(errorAttributes, HttpStatus.UNAUTHORIZED, "UNAUTHORIZED",
+                        "Unauthorized", "Authorization is invalid", path);
+            }
             case null, default -> {
                 log.error("Unexpected error", error);
                 

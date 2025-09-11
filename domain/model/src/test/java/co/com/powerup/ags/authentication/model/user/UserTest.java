@@ -1,7 +1,9 @@
 package co.com.powerup.ags.authentication.model.user;
 
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Password;
 import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
+import co.com.powerup.ags.authentication.model.user.gateways.PasswordEncoder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -11,6 +13,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UserTest {
     
@@ -23,6 +28,14 @@ class UserTest {
     private static final Email VALID_EMAIL = new Email("steven.garcia@test.com");
     private static final BigDecimal VALID_BASE_SALARY = new BigDecimal("50000.00");
     private static final String VALID_ID_NUMBER = "123456";
+    private static final Password VALID_PASSWORD = createValidPassword();
+    private static final Integer VALID_ROLE_ID = 1;
+    
+    private static Password createValidPassword() {
+        PasswordEncoder mockEncoder = mock(PasswordEncoder.class);
+        when(mockEncoder.encode(anyString())).thenReturn("hashedPassword");
+        return Password.fromPlainText("ValidPass123", mockEncoder);
+    }
     
     @Test
     void shouldCreateUserWithAllValidParameters() {
@@ -35,7 +48,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user).isNotNull();
@@ -47,6 +62,8 @@ class UserTest {
         assertThat(user.birthDate()).isEqualTo(VALID_BIRTH_DATE);
         assertThat(user.email()).isEqualTo(VALID_EMAIL);
         assertThat(user.baseSalary()).isEqualTo(VALID_BASE_SALARY);
+        assertThat(user.password()).isEqualTo(VALID_PASSWORD);
+        assertThat(user.roleId()).isEqualTo(VALID_ROLE_ID);
     }
     
     @Test
@@ -61,7 +78,9 @@ class UserTest {
                 eighteenYearsAgo,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user.birthDate()).isEqualTo(eighteenYearsAgo);
@@ -80,7 +99,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 maxSalary,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user.baseSalary()).isEqualByComparingTo(maxSalary);
@@ -99,7 +120,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 minSalary,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user.baseSalary()).isEqualByComparingTo(minSalary);
@@ -118,7 +141,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Name cannot be null or empty");
@@ -137,7 +162,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Last name cannot be null or empty");
@@ -154,7 +181,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Phone number cannot be null");
@@ -171,10 +200,31 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 null,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Email cannot be null");
+    }
+    
+    @Test
+    void shouldThrowExceptionForNullPassword() {
+        assertThatThrownBy(() -> new User(
+                VALID_ID,
+                VALID_NAME,
+                VALID_LAST_NAME,
+                VALID_ADDRESS,
+                VALID_PHONE_NUMBER,
+                VALID_BIRTH_DATE,
+                VALID_EMAIL,
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER,
+                null,
+                VALID_ROLE_ID
+        ))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Password cannot be null");
     }
     
     @Test
@@ -188,7 +238,9 @@ class UserTest {
                 null,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Birth date cannot be null");
@@ -207,7 +259,9 @@ class UserTest {
                 futureDate,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User must be at least 18 years old");
@@ -226,7 +280,9 @@ class UserTest {
                 seventeenYearsAgo,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User must be at least 18 years old");
@@ -243,7 +299,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 null,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be null");
@@ -262,7 +320,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 negativeSalary,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be negative");
@@ -281,7 +341,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 negativeSalary,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be negative");
@@ -300,7 +362,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 excessiveSalary,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Base salary cannot be greater than 15,000,000");
@@ -319,7 +383,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                invalidIdNumber
+                invalidIdNumber,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("ID number cannot be null or empty");
@@ -336,7 +402,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         User user2 = new User(
                 VALID_ID,
@@ -347,7 +415,9 @@ class UserTest {
                 LocalDate.of(1985, 12, 25),
                 new Email("different@example.com"),
                 new BigDecimal("100000"),
-                "654616"
+                "654616",
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user1).isEqualTo(user2);
@@ -365,7 +435,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         User user2 = new User(
                 "different-id",
@@ -376,7 +448,9 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user1).isNotEqualTo(user2);
@@ -393,11 +467,51 @@ class UserTest {
                 VALID_BIRTH_DATE,
                 VALID_EMAIL,
                 VALID_BASE_SALARY,
-                VALID_ID_NUMBER
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                VALID_ROLE_ID
         );
         
         assertThat(user).isNotEqualTo(null);
         assertThat(user).isNotEqualTo("not a user");
         assertThat(user).isEqualTo(user);
+    }
+    
+    @Test
+    void shouldThrowExceptionForNullRoleId() {
+        assertThatThrownBy(() -> new User(
+                VALID_ID,
+                VALID_NAME,
+                VALID_LAST_NAME,
+                VALID_ADDRESS,
+                VALID_PHONE_NUMBER,
+                VALID_BIRTH_DATE,
+                VALID_EMAIL,
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                null
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Role ID cannot be null or less or equal 0");
+    }
+    
+    @Test
+    void shouldThrowExceptionForNegativeRoleId() {
+        assertThatThrownBy(() -> new User(
+                VALID_ID,
+                VALID_NAME,
+                VALID_LAST_NAME,
+                VALID_ADDRESS,
+                VALID_PHONE_NUMBER,
+                VALID_BIRTH_DATE,
+                VALID_EMAIL,
+                VALID_BASE_SALARY,
+                VALID_ID_NUMBER,
+                VALID_PASSWORD,
+                -1
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Role ID cannot be null or less or equal 0");
     }
 }

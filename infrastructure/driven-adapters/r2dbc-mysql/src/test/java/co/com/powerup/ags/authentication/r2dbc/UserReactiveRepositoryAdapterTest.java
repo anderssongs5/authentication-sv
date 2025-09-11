@@ -2,6 +2,7 @@ package co.com.powerup.ags.authentication.r2dbc;
 
 import co.com.powerup.ags.authentication.model.user.User;
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Password;
 import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
 import co.com.powerup.ags.authentication.r2dbc.entity.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
@@ -35,6 +35,8 @@ class UserReactiveRepositoryAdapterTest {
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "123456789";
+    private static final String USER_HASHED_PASSWORD = "hashedPassword123";
+    private static final Integer USER_ROLE_ID = 1;
 
     @InjectMocks
     UserReactiveRepositoryAdapter repositoryAdapter;
@@ -62,7 +64,9 @@ class UserReactiveRepositoryAdapterTest {
                 USER_BIRTH_DATE,
                 new Email(USER_EMAIL),
                 USER_BASE_SALARY,
-                USER_ID_NUMBER
+                USER_ID_NUMBER,
+                Password.fromStoredData(USER_HASHED_PASSWORD),
+                USER_ROLE_ID
         );
         
         validUserEntity = UserEntity.builder()
@@ -75,6 +79,8 @@ class UserReactiveRepositoryAdapterTest {
                 .email(USER_EMAIL)
                 .baseSalary(USER_BASE_SALARY)
                 .idNumber(USER_ID_NUMBER)
+                .password(USER_HASHED_PASSWORD)
+                .roleId(USER_ROLE_ID)
                 .build();
     }
 
@@ -505,5 +511,66 @@ class UserReactiveRepositoryAdapterTest {
                 .verify();
 
         verify(repository).existsByEmailOrIdNumber(USER_EMAIL, USER_ID_NUMBER);
+    }
+
+    @Test
+    void mustFindByEmail() {
+        when(repository.findByEmail(USER_EMAIL)).thenReturn(Mono.just(validUserEntity));
+
+        Mono<User> result = repositoryAdapter.findByEmail(USER_EMAIL);
+
+        StepVerifier.create(result)
+                .expectNextMatches(user -> user.email().value().equals(USER_EMAIL))
+                .verifyComplete();
+
+        verify(repository).findByEmail(USER_EMAIL);
+    }
+
+    @Test
+    void mustReturnEmptyWhenEmailNotFound() {
+        when(repository.findByEmail(USER_EMAIL)).thenReturn(Mono.empty());
+
+        Mono<User> result = repositoryAdapter.findByEmail(USER_EMAIL);
+
+        StepVerifier.create(result)
+                .expectComplete()
+                .verify();
+
+        verify(repository).findByEmail(USER_EMAIL);
+    }
+
+    @Test
+    void mustThrowErrorWhenFindingByNullEmail() {
+        Mono<User> result = repositoryAdapter.findByEmail(null);
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(repository, never()).findByEmail(any());
+    }
+
+    @Test
+    void mustThrowErrorWhenFindingByEmptyEmail() {
+        Mono<User> result = repositoryAdapter.findByEmail("");
+
+        StepVerifier.create(result)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+
+        verify(repository, never()).findByEmail(any());
+    }
+
+    @Test
+    void mustHandleDataAccessExceptionOnFindByEmail() {
+        when(repository.findByEmail(USER_EMAIL)).thenReturn(Mono.error(new DataAccessResourceFailureException("Database connection failed")));
+
+        Mono<User> result = repositoryAdapter.findByEmail(USER_EMAIL);
+
+        StepVerifier.create(result)
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(repository).findByEmail(USER_EMAIL);
     }
 }

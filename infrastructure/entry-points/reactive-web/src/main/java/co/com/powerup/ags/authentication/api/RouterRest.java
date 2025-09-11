@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import co.com.powerup.ags.authentication.api.dto.CreateUserRequest;
+import co.com.powerup.ags.authentication.api.dto.LoginRequest;
 import co.com.powerup.ags.authentication.api.dto.UpdateUserRequest;
 
 @Configuration
@@ -36,8 +37,9 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "createUser",
                             summary = "Create a new user",
-                            description = "Creates a new user with the provided information",
+                            description = "Creates a new user with the provided information. Requires ADMIN or ADVISOR role.",
                             tags = {"Users"},
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                     description = "User creation data",
                                     required = true,
@@ -68,7 +70,8 @@ public class RouterRest {
                                                                             "phoneNumber": "1234567890",
                                                                             "birthDate": "1990-10-01",
                                                                             "email": "steven.garcia@test.com",
-                                                                            "baseSalary": 50000.00
+                                                                            "baseSalary": 50000.00,
+                                                                            "roleId": 1
                                                                         }
                                                                     }
                                                                     """
@@ -140,6 +143,50 @@ public class RouterRest {
                                                                     """
                                                     )
                                             )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Unauthorized - Missing or invalid bearer token",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Unauthorized Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/users",
+                                                                        "status": 401,
+                                                                        "error": "Unauthorized",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "UNAUTHORIZED",
+                                                                        "message": "Authorization is invalid"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "403",
+                                            description = "Forbidden - Insufficient permissions (requires ADMIN or ADVISOR role)",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Forbidden Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/users",
+                                                                        "status": 403,
+                                                                        "error": "Forbidden",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "ACCESS_DENIED",
+                                                                        "message": "Access denied. You don't have sufficient permissions to access this resource."
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
                                     )
                             }
                     )
@@ -152,8 +199,9 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "getUserById",
                             summary = "Get user by ID",
-                            description = "Retrieves a user by their unique identifier",
+                            description = "Retrieves a user by their unique identifier. Requires ADMIN or ADVISOR role.",
                             tags = {"Users"},
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             parameters = {
                                     @Parameter(
                                             name = "id",
@@ -247,8 +295,9 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "updateUser",
                             summary = "Update user",
-                            description = "Updates an existing user with the provided information",
+                            description = "Updates an existing user with the provided information. Requires ADMIN or ADVISOR role.",
                             tags = {"Users"},
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             parameters = {
                                     @Parameter(
                                             name = "id",
@@ -372,8 +421,9 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "deleteUser",
                             summary = "Delete user",
-                            description = "Deletes an existing user by their unique identifier",
+                            description = "Deletes an existing user by their unique identifier. Requires ADMIN role.",
                             tags = {"Users"},
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             parameters = {
                                     @Parameter(
                                             name = "id",
@@ -443,8 +493,9 @@ public class RouterRest {
                     operation = @Operation(
                             operationId = "getAllUsers",
                             summary = "Get all users",
-                            description = "Retrieves a list of all users",
+                            description = "Retrieves a list of all users. Requires ADMIN or ADVISOR role.",
                             tags = {"Users"},
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
@@ -515,19 +566,27 @@ public class RouterRest {
                     path = "/api/v1/users/search",
                     method = RequestMethod.GET,
                     beanClass = HandlerV1.class,
-                    beanMethod = "getUserByIdNumber",
+                    beanMethod = "getUserByIdNumberOrEmail",
                     operation = @Operation(
-                            operationId = "getUserByIdNumber",
-                            summary = "Search user by ID number",
-                            description = "Retrieves a user by their ID number",
+                            operationId = "getUserByIdNumberOrEmail",
+                            summary = "Search user by ID number or email",
+                            description = "Retrieves a user by their ID number or email address. Either idNumber or email parameter is required. Requires ADMIN, ADVISOR or USER role.",
                             tags = {"Users"},
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             parameters = {
                                     @Parameter(
                                             name = "idNumber",
                                             description = "User ID number",
-                                            required = true,
+                                            required = false,
                                             in = ParameterIn.QUERY,
                                             schema = @Schema(type = "string", example = "123456789")
+                                    ),
+                                    @Parameter(
+                                            name = "email",
+                                            description = "User email address",
+                                            required = false,
+                                            in = ParameterIn.QUERY,
+                                            schema = @Schema(type = "string", example = "user@example.com")
                                     )
                             },
                             responses = {
@@ -553,8 +612,32 @@ public class RouterRest {
                                                                             "birthDate": "1990-10-01",
                                                                             "email": "steven.garcia@test.com",
                                                                             "baseSalary": 50000.00,
-                                                                            "idNumber": "123456789"
-                                                                        }
+                                                                            "idNumber": "123456789",
+                                                                            "roleId": 1
+                                                                        },
+                                                                        "message": "User retrieved successfully"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Missing required parameters",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Missing Parameters Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/users/search",
+                                                                        "status": 400,
+                                                                        "error": "Bad Request",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "INVALID_INPUT",
+                                                                        "message": "Either idNumber or email query parameter is required"
                                                                     }
                                                                     """
                                                     )
@@ -606,6 +689,214 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/login",
+                    method = RequestMethod.POST,
+                    beanClass = HandlerV1.class,
+                    beanMethod = "authenticate",
+                    operation = @Operation(
+                            operationId = "authenticate",
+                            summary = "Authenticate user",
+                            description = "Authenticates a user with email and password, returns JWT token",
+                            tags = {"Authentication"},
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    description = "User login credentials as form data",
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/x-www-form-urlencoded",
+                                            schema = @Schema(implementation = LoginRequest.class)
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Authentication successful",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = SuccessResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Success Response",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "data": {
+                                                                            "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlTmFtZSI6IkFETUlOIiwiYXVkIjoiYXV0aGVudGljYXRpb24tc2VydmljZSIsImlhdCI6MTYzMDUwMDAwMCwiZXhwIjoxNjMwNTg2NDAwfQ.signature",
+                                                                            "tokenType": "Bearer",
+                                                                            "expiresIn": 86400
+                                                                        },
+                                                                        "message": "Authentication successful"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Invalid input data",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Validation Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "status": 400,
+                                                                        "error": "Bad Request",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "INVALID_INPUT",
+                                                                        "message": "Email is required"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = "Invalid credentials",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Authentication Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "status": 401,
+                                                                        "error": "Unauthorized",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "INVALID_CREDENTIALS",
+                                                                        "message": "Invalid email or password"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Internal server error",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Internal Server Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/login",
+                                                                        "status": 500,
+                                                                        "error": "Internal Server Error",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "UNEXPECTED_ERROR",
+                                                                        "message": "An unexpected error occurred"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    )
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/introspect",
+                    method = RequestMethod.POST,
+                    beanClass = HandlerV1.class,
+                    beanMethod = "introspect",
+                    operation = @Operation(
+                            operationId = "introspect",
+                            summary = "Token introspection",
+                            description = "Validates and introspects a JWT token for OAuth2 compliance (RFC 7662)",
+                            tags = {"Authentication"},
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    description = "Token introspection request as form data",
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/x-www-form-urlencoded",
+                                            schema = @Schema(type = "object", 
+                                                    example = "token=eyJhbGciOiJIUzI1NiJ9...")
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Token introspection successful",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = SuccessResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Active Token Response",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/introspect",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "data": {
+                                                                            "active": true,
+                                                                            "token_type": "Bearer",
+                                                                            "sub": "123e4567-e89b-12d3-a456-426614174000",
+                                                                            "email": "user@example.com",
+                                                                            "roleName": "ADMIN",
+                                                                            "aud": "authentication-service",
+                                                                            "iat": 1630500000,
+                                                                            "exp": 1630586400
+                                                                        },
+                                                                        "message": "Token introspection successful"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Invalid input data",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Validation Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/introspect",
+                                                                        "status": 400,
+                                                                        "error": "Bad Request",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "INVALID_INPUT",
+                                                                        "message": "Token is required"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Internal server error",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    schema = @Schema(implementation = ErrorResponse.class),
+                                                    examples = @ExampleObject(
+                                                            name = "Internal Server Error",
+                                                            value = """
+                                                                    {
+                                                                        "timestamp": "2025-08-26T08:48:10.161513",
+                                                                        "path": "/api/v1/introspect",
+                                                                        "status": 500,
+                                                                        "error": "Internal Server Error",
+                                                                        "requestId": "7bf1f546-2",
+                                                                        "code": "UNEXPECTED_ERROR",
+                                                                        "message": "An unexpected error occurred"
+                                                                    }
+                                                                    """
+                                                    )
+                                            )
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(HandlerV1 handlerV1) {
@@ -615,10 +906,16 @@ public class RouterRest {
                         builder -> builder
                                 .GET("", handlerV1::getAllUsers)
                                 .POST("", handlerV1::createUser)
-                                .GET("/search", handlerV1::getUserByIdNumber)
+                                .GET("/search", handlerV1::getUserByIdNumberOrEmail)
                                 .GET(ID_PATH_PARAM, handlerV1::getUserById)
                                 .PUT(ID_PATH_PARAM, handlerV1::updateUser)
                                 .DELETE(ID_PATH_PARAM, handlerV1::deleteUser))
+                .path("/api/v1/login",
+                        builder -> builder
+                                .POST("", handlerV1::authenticate))
+                .path("/api/v1/introspect",
+                        builder -> builder
+                                .POST("", handlerV1::introspect))
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package co.com.powerup.ags.authentication.r2dbc.mapper;
 
 import co.com.powerup.ags.authentication.model.user.User;
 import co.com.powerup.ags.authentication.model.user.valueobjects.Email;
+import co.com.powerup.ags.authentication.model.user.valueobjects.Password;
 import co.com.powerup.ags.authentication.model.user.valueobjects.PhoneNumber;
 import co.com.powerup.ags.authentication.r2dbc.entity.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,8 @@ class UserEntityMapperTest {
     private static final String USER_EMAIL = "steven.garcia@test.com";
     private static final BigDecimal USER_BASE_SALARY = new BigDecimal("50000.00");
     private static final String USER_ID_NUMBER = "12345679";
+    private static final String USER_HASHED_PASSWORD = "hashedPassword123";
+    private static final Integer USER_ROLE_ID = 1;
 
     private final UserEntityMapper mapper = UserEntityMapper.INSTANCE;
     
@@ -40,7 +43,9 @@ class UserEntityMapperTest {
                 USER_BIRTH_DATE,
                 new Email(USER_EMAIL),
                 USER_BASE_SALARY,
-                USER_ID_NUMBER
+                USER_ID_NUMBER,
+                Password.fromStoredData(USER_HASHED_PASSWORD),
+                USER_ROLE_ID
         );
 
         validUserEntity = UserEntity.builder()
@@ -53,7 +58,9 @@ class UserEntityMapperTest {
                 .email(USER_EMAIL)
                 .baseSalary(USER_BASE_SALARY)
                 .idNumber(USER_ID_NUMBER)
+                .password(USER_HASHED_PASSWORD)
                 .isNew(true)
+                .roleId(USER_ROLE_ID)
                 .build();
     }
 
@@ -70,6 +77,8 @@ class UserEntityMapperTest {
         assertThat(result.getBirthDate()).isEqualTo(validUser.birthDate());
         assertThat(result.getEmail()).isEqualTo(validUser.email().value());
         assertThat(result.getBaseSalary()).isEqualTo(validUser.baseSalary());
+        assertThat(result.getPassword()).isEqualTo(validUser.password().hashedPassword());
+        assertThat(result.getRoleId()).isEqualTo(validUser.roleId());
         assertThat(result.isNew()).isTrue();
     }
 
@@ -86,6 +95,8 @@ class UserEntityMapperTest {
         assertThat(result.getBirthDate()).isEqualTo(validUser.birthDate());
         assertThat(result.getEmail()).isEqualTo(validUser.email().value());
         assertThat(result.getBaseSalary()).isEqualTo(validUser.baseSalary());
+        assertThat(result.getPassword()).isEqualTo(validUser.password().hashedPassword());
+        assertThat(result.getRoleId()).isEqualTo(validUser.roleId());
         assertThat(result.isNew()).isFalse(); // Key difference: existing entity
     }
 
@@ -104,6 +115,9 @@ class UserEntityMapperTest {
         assertThat(result.email()).isNotNull();
         assertThat(result.email().value()).isEqualTo(validUserEntity.getEmail());
         assertThat(result.baseSalary()).isEqualTo(validUserEntity.getBaseSalary());
+        assertThat(result.password()).isNotNull();
+        assertThat(result.password().hashedPassword()).isEqualTo(validUserEntity.getPassword());
+        assertThat(result.roleId()).isEqualTo(validUserEntity.getRoleId());
     }
 
     @Test
@@ -137,6 +151,7 @@ class UserEntityMapperTest {
         assertThat(result.birthDate()).isEqualTo(validUser.birthDate());
         assertThat(result.email().value()).isEqualTo(validUser.email().value());
         assertThat(result.baseSalary()).isEqualTo(validUser.baseSalary());
+        assertThat(result.password().hashedPassword()).isEqualTo(validUser.password().hashedPassword());
     }
 
     @Test
@@ -151,6 +166,8 @@ class UserEntityMapperTest {
                 .email(USER_EMAIL)
                 .baseSalary(USER_BASE_SALARY)
                 .idNumber(USER_ID_NUMBER)
+                .password(USER_HASHED_PASSWORD)
+                .roleId(USER_ROLE_ID)
                 .build();
 
         User result = mapper.toDomain(entityWithNulls);
@@ -160,5 +177,56 @@ class UserEntityMapperTest {
         assertThat(result.name()).isEqualTo(USER_NAME);
         assertThat(result.phoneNumber().value()).isEqualTo(USER_PHONE_NUMBER);
         assertThat(result.email().value()).isEqualTo(USER_EMAIL);
+        assertThat(result.password()).isNotNull();
+        assertThat(result.password().hashedPassword()).isEqualTo(USER_HASHED_PASSWORD);
+        assertThat(result.roleId()).isEqualTo(USER_ROLE_ID);
+    }
+
+    @Test
+    void shouldHandlePasswordValueObjectConversion() {
+        UserEntity entity = mapper.toEntity(validUser);
+        User domainFromEntity = mapper.toDomain(entity);
+
+        assertThat(domainFromEntity.password().hashedPassword()).isEqualTo(validUser.password().hashedPassword());
+        assertThat(domainFromEntity.password().hashedPassword()).isEqualTo(USER_HASHED_PASSWORD);
+    }
+
+    @Test
+    void shouldMapPasswordFromUserToEntity() {
+        UserEntity result = mapper.toEntity(validUser);
+
+        assertThat(result.getPassword()).isNotNull();
+        assertThat(result.getPassword()).isEqualTo(USER_HASHED_PASSWORD);
+    }
+
+    @Test
+    void shouldMapPasswordFromEntityToUser() {
+        User result = mapper.toDomain(validUserEntity);
+
+        assertThat(result.password()).isNotNull();
+        assertThat(result.password().hashedPassword()).isEqualTo(USER_HASHED_PASSWORD);
+    }
+
+    @Test
+    void shouldHandleValidPasswordOnlyValue() {
+        UserEntity entityWithPassword = UserEntity.builder()
+                .id(USER_ID)
+                .name(USER_NAME)
+                .lastName(USER_LAST_NAME)
+                .address(USER_ADDRESS)
+                .phoneNumber(USER_PHONE_NUMBER)
+                .birthDate(USER_BIRTH_DATE)
+                .email(USER_EMAIL)
+                .baseSalary(USER_BASE_SALARY)
+                .idNumber(USER_ID_NUMBER)
+                .password(USER_HASHED_PASSWORD)
+                .roleId(USER_ROLE_ID)
+                .build();
+
+        User result = mapper.toDomain(entityWithPassword);
+
+        assertThat(result).isNotNull();
+        assertThat(result.password()).isNotNull();
+        assertThat(result.password().hashedPassword()).isEqualTo(USER_HASHED_PASSWORD);
     }
 }
