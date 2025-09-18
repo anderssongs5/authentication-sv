@@ -13,7 +13,8 @@ public class SecurityConstants {
             "/v3/api-docs/**",
             "/webjars/swagger-ui/**",
             "/api/v1/login",
-            "/api/v1/introspect");
+            "/api/v1/introspect",
+            "/api/v1/users/search");
     
     public static final String TOKEN = "token";
     
