@@ -18,7 +18,9 @@ RUN ./gradlew clean bootJar -x test -x validateStructure
 
 FROM openjdk:21-jdk-slim
 
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Create user, install packages, and setup permissions in single layer
+RUN groupadd -r appuser && useradd -r -g appuser appuser && \
+    apt-get update && apt-get install -y curl wget && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -32,13 +34,4 @@ ENV SERVER_PORT=8080
 
 EXPOSE ${SERVER_PORT}
 
-ENTRYPOINT ["sh", "-c", "java -jar app.jar \
-    --server.port=${SERVER_PORT} \
-    --adapters.r2dbc.host=${DB_HOST} \
-    --adapters.r2dbc.port=${DB_PORT} \
-    --adapters.r2dbc.database=${DB_DATABASE} \
-    --adapters.r2dbc.schema=${DB_SCHEMA} \
-    --adapters.r2dbc.username=${DB_USERNAME} \
-    --adapters.r2dbc.password=${DB_PASSWORD} \
-    --security.jwt.secret=${JWT_SECRET} \
-    --security.jwt.expiration=${JWT_EXPIRATION}"]
+ENTRYPOINT ["sh", "-c", "java -jar app.jar"]

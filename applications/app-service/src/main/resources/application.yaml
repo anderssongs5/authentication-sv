@@ -31,14 +31,14 @@ logging:
 
 adapters:
   r2dbc:
-    host: "localhost"
-    port: 3306
-    database: "authenticacion_db"
-    schema: "public"
-    username: "authuser"
-    password: "authpassword"
+    host: "${DB_HOST:localhost}"
+    port: ${DB_PORT:3306}
+    database: "${DB_DATABASE:authenticacion_db}"
+    schema: "${DB_SCHEMA:public}"
+    username: "${DB_USERNAME:authuser}"
+    password: "${DB_PASSWORD:authpassword}"
 
 security:
   jwt:
-    secret: "bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA="
-    expiration: 3600
+    secret: "${JWT_SECRET:bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA=}"
+    expiration: "${JWT_EXPIRATION:3600}"
